@@ -1,0 +1,392 @@
+/* ===================== style.css =====================
+   Split out of index.html's inline <style> block to keep that file's
+   size down — same motivation as celestial.html (the Almanac section)
+   being split out earlier, just using a plain <link rel="stylesheet">
+   instead of the w3-include-html pattern, since that pattern is for
+   HTML fragments specifically and CSS already has its own native,
+   simpler include mechanism that doesn't need any JS or DOM-timing
+   workarounds (a <link> blocks rendering until loaded, the same way a
+   <style> block would have).
+
+   Scope: this is index.html's CSS only. records.html, charts.html, and
+   climate.html each still carry their own separate (and substantially
+   overlapping — same --bw-*/--bs-* palette, same .card/.nav-btn/
+   .records-tab rules, etc.) <style> blocks, copied by hand across pages
+   as noted in those files' own comments. Unifying all four into this
+   one shared stylesheet would be the natural next step if duplication
+   across pages (rather than just this one file's size) is the concern
+   — flagged here rather than done speculatively, since it'd touch
+   every other page too. */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ===================== Birch palette mapped onto Bootstrap CSS vars ===================== */
+:root,
+[data-bs-theme="light"]{
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-lime:#C9DA1E;
+  --bw-lime-soft:#2E331A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#2C5478;
+  --bw-instrument-headspace:#495E74;
+  --bw-instrument-border:#E8EEF5;
+  --bw-radius:18px;
+  --bw-radius-sm:10px;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#2E5C84;
+  --bs-body-color:#F2F6FA;
+  --bs-secondary-color:#AFC8DE;
+  --bs-tertiary-bg:#1B3A57;
+  --bs-secondary-bg:#234870;
+  --bs-border-color:#2C5478;
+  --bs-border-color-translucent:#2C5478;
+  --bs-card-bg:#16314D;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+  --bs-warning-rgb:232,163,61;
+  --bs-font-sans-serif:'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-bs-theme="dark"]{
+  --bw-instrument-headspace:#222A2E;
+  --bw-instrument-border:#343E43;
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#343E43;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#14181B;
+  --bs-body-color:#EAEFE9;
+  --bs-secondary-color:#8C9A95;
+  --bs-tertiary-bg:#222A2E;
+  --bs-secondary-bg:#2A3338;
+  --bs-border-color:#343E43;
+  --bs-border-color-translucent:#343E43;
+  --bs-card-bg:#1B2125;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+}
+
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--bs-font-sans-serif);
+  padding-bottom:48px;
+  transition:background-color .25s ease, color .25s ease;
+}
+.font-mono{font-family:'JetBrains Mono','Courier New',monospace;}
+.card{border-radius:var(--bw-radius-sm); box-shadow:var(--bw-shadow);}
+.shadow-card{box-shadow:var(--bw-shadow) !important;}
+
+/* In-page scroll buttons (Forecast/Observations/Almanac) — same look as
+   the Charts/Records/Climate nav buttons, just separated by a thin
+   divider so it reads as "jump within this page" rather than another
+   page link. The navbar itself stays in normal document flow (no
+   position:sticky/fixed) — these buttons don't change that. */
+.nav-scroll-sep{width:1px;height:24px;background:var(--bs-border-color);margin:0 4px;}
+@media (max-width:767.98px){
+  .nav-scroll-sep{width:100%;height:1px;margin:6px 0;}
+}
+
+/* ---------- Birch bark signature motif ---------- */
+.bark-rule{height:14px;width:100%;overflow:hidden;opacity:.55;}
+.bark-rule svg{display:block;width:100%;height:100%;}
+.bark-rule .lenticel{stroke:var(--bw-line);stroke-width:1.5;}
+
+/* ---------- Top bar ---------- */
+.brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
+.brand-mark .leaf{color:var(--bw-accent);}
+.brand-sub{font-size:11px;color:var(--bs-secondary-color);letter-spacing:.06em;}
+
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.icon-btn svg{width:18px;height:18px;}
+#themeToggle{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);}
+#themeToggle:hover,#themeToggle:focus,#themeToggle.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+#themeMenu .dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12.5px;}
+#themeMenu .theme-check{width:14px;color:var(--bw-accent);}
+#themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
+.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;}
+.nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+
+/* Hamburger toggler — both themes here have light-colored body text on a
+   dark-ish page background (navy in light theme, near-black in dark
+   theme), so a single light icon colour works for both; no per-theme
+   variant needed, unlike most of the other nav/card colors. */
+.navbar-toggler{border:1px solid var(--bs-body-color);padding:6px 10px;}
+.navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
+.navbar-toggler-icon{
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F2F6FA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+@media (max-width:767.98px){
+  .navbar-collapse{margin-top:14px;}
+  .navbar-collapse .dropdown,
+  .navbar-collapse .nav-btn,
+  .navbar-collapse .unit-select{width:100%;}
+  .navbar-collapse .nav-btn{text-align:left;}
+  .navbar-collapse .dropdown-menu{position:static;width:100%;margin-top:4px;}
+}
+
+/* ---------- Warning banner ---------- */
+/* Severity drives color via --alert-color/--alert-color-soft, defaulting
+   to amber; .warning-banner--red/--yellow override those two variables.
+   Previously every severity (including UKHSA Red) rendered identically
+   amber because nothing here ever varied by severity at all. */
+.warning-banner{
+  --alert-color: var(--bw-accent);
+  --alert-color-soft: var(--bw-accent-soft);
+  background:linear-gradient(135deg, var(--alert-color-soft), transparent);
+  border:1px solid var(--alert-color);
+  border-left:5px solid var(--alert-color);
+  border-radius:var(--bw-radius-sm);
+  font-size:.9em;
+}
+.warning-banner--red{ --alert-color: var(--bw-danger); --alert-color-soft: var(--bw-danger-soft); }
+.warning-banner--yellow{ --alert-color: var(--bw-yellow); --alert-color-soft: var(--bw-yellow-soft); }
+.warning-banner strong{color:var(--alert-color);}
+.warning-banner a{color:var(--bw-sky);text-decoration:underline;font-weight:600;word-break:break-all;}
+.warning-banner ul, .warning-banner ol{margin-bottom:0;padding-left:1.2em;}
+.warning-banner li{margin-bottom:4px;}
+.warning-banner p:last-child{margin-bottom:0;}
+
+/* ---------- Hero ---------- */
+.hero{border-radius:var(--bw-radius);overflow:hidden;padding-bottom:1.5rem !important;}
+.hero-now-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bs-secondary-color);}
+.hero-temp{font-weight:700;font-size:clamp(50px,7.2vw,76px);line-height:1;}
+.hero-icon{width:74px;height:74px;flex-shrink:0;object-fit:contain;}
+.hero-cond{font-size:17px;}
+.hero-meta-item{font-size:13.5px;color:var(--bs-secondary-color);}
+.hero-meta-item b{color:var(--bs-body-color);font-weight:600;}
+.pollen-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--bw-sky-soft);color:var(--bw-sky);
+  font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+}
+
+/* ---------- Instruments ---------- */
+/* Flexbox rather than a Bootstrap col-N grid: col-N is locked to whole
+   12ths, so giving the narrower thermometer/rain cards a smaller share
+   (e.g. col-lg-1) just leaves dead space at the end of the row instead
+   of letting the wider gauges absorb it. flex-grow on every card means
+   the row always fills its full width edge-to-edge, at any size. */
+.instrument-row{align-items:stretch;}
+.instrument-col{flex:1 1 190px;min-width:130px;}
+.instrument-col--narrow{flex:0.72 1 140px;min-width:100px;}
+.instrument-col--narrow.dual{flex:1.25 1 220px;}
+/* At phone widths, the narrower basis above (140px vs the regular cards'
+   190px) let two narrow cards (thermometer + rain gauge, each with
+   min-width:100px) fit side-by-side on one row while every other
+   instrument card was already wrapping to its own full-width row — so
+   the thermometer/rain-gauge cards ended up visibly narrower than their
+   siblings instead of matching them. Forcing every instrument card to
+   100% row width at the same breakpoint used for single-column mode
+   elsewhere on this page (767.98px) makes them all match. */
+@media (max-width:767.98px){
+  .instrument-col, .instrument-col--narrow, .instrument-col--narrow.dual{flex:1 1 100%;}
+}
+.instrument-card{display:flex;align-items:center;justify-content:center;padding:18px 8px;}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;}
+.gauge-wrap canvas{width:200px!important;max-width:100%;height:auto!important;aspect-ratio:1/1;display:block;}
+.gauge-caption{font-size:11px;color:var(--bs-secondary-color);}
+.barometer-overlay-frame{position:relative;}
+.barometer-zone-labels{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.gauge-value-big{font-size:20px;font-weight:700;color:var(--bw-good);margin-top:2px;}
+
+/* ---------- Thermometer (SVG, not canvas-gauges — it has no bulb/linear gauge type) ---------- */
+.thermo-svg{width:130px;max-width:100%;height:auto;aspect-ratio:130/200;display:block;}
+#thermoMercury{transition:y .8s ease, height .8s ease, fill .8s ease;}
+#thermoBulb{transition:fill .8s ease;}
+
+/* ---------- Rain gauge (measuring cylinder, same SVG-not-canvas reasoning as the thermometer) ---------- */
+.raingauge-svg{width:130px;max-width:100%;height:auto;aspect-ratio:130/200;display:block;}
+.raingauge-svg.dual{width:220px;aspect-ratio:220/200;}
+#rainFill{transition:y .8s ease, height .8s ease;}
+#rainMeniscus{transition:cy .8s ease;}
+
+/* day strip */
+.day-card{
+  flex:1 1 110px;min-width:90px;padding:14px 8px;text-align:center;
+  cursor:pointer;position:relative;
+}
+.day-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:transparent;}
+.day-card.active::before{background:var(--bw-lime);}
+.day-card .dname{font-size:12.5px;font-weight:700;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;}
+.day-card .dicon{width:38px;height:38px;margin:8px auto 4px;display:block;object-fit:contain;}
+.day-card .dcond{font-size:11.5px;color:var(--bs-secondary-color);height:28px;display:flex;align-items:center;justify-content:center;}
+.day-card .dtemps{font-family:'JetBrains Mono',monospace;font-size:14px;margin-top:4px;}
+.day-card .dtemps .lo{color:var(--bs-secondary-color);}
+.day-card .dwarn{position:absolute;top:6px;right:6px;display:block;}
+.day-card.active{background:var(--bs-tertiary-bg);}
+.day-card.active .dname{color:var(--bw-accent);}
+
+/* ---------- Section labels ---------- */
+.section-label{
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bs-secondary-color);
+  margin:30px 0 12px;display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:"";flex:1;height:1px;background:var(--bs-border-color);}
+
+/* ---------- Metric cards ---------- */
+.metric-card .mlabel{font-size:12px;color:var(--bs-secondary-color);display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.metric-card .mvalue{font-size:26px;font-weight:700;}
+.metric-card .mvalue small{font-size:13px;color:var(--bs-secondary-color);font-weight:400;}
+.metric-card .msub{font-size:12.5px;color:var(--bs-secondary-color);margin-top:4px;}
+.beaufort-chip{display:inline-block;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bw-sky-soft);color:var(--bw-sky);padding:2px 8px;border-radius:10px;}
+.mlabel-icon{width:14px;height:14px;object-fit:contain;}
+
+/* ---------- Temperature feature card (Today's Observations) ---------- */
+.metric-card--feature{padding:18px;}
+.feature-icon{width:30px;height:30px;flex:none;}
+.feature-icon svg{width:100%;height:100%;display:block;}
+.feature-title{font-size:16px;font-weight:700;}
+.feature-current{font-size:34px;font-weight:700;line-height:1;}
+.obs-subcol{border-top:1px solid var(--bs-border-color);padding-top:12px;margin-top:4px;}
+@media (min-width:768px){
+  .obs-subcol{border-top:none;border-left:1px solid var(--bs-border-color);padding-top:0;margin-top:0;padding-left:18px;}
+  .obs-subcol:first-child{border-left:none;padding-left:0;}
+}
+.obs-subcol-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--bs-secondary-color);margin-bottom:8px;}
+.obs-stat-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;padding:3px 0;gap:8px;}
+.obs-stat-row .obs-stat-label{color:var(--bs-secondary-color);}
+.obs-stat-row .obs-stat-value{font-family:'JetBrains Mono',monospace;font-weight:600;text-align:right;}
+.obs-stat-time{font-size:10.5px;color:var(--bs-secondary-color);font-weight:400;margin-left:4px;}
+.obs-trend-rising{color:#E8826F;}
+.obs-trend-falling{color:var(--bw-sky);}
+.obs-trend-steady{color:var(--bs-secondary-color);}
+.obs-footnote{font-size:11px;color:var(--bs-secondary-color);font-style:italic;margin-top:12px;}
+.metric-card--feature-half .obs-stat-row{font-size:14px;}
+/* Distinct from the plain '--' loading placeholder: this marks a stat
+   that archive.json genuinely doesn't carry a field for (not a fetch
+   that just hasn't resolved yet) — same "flag it, don't guess" pattern
+   as the rest of this card. */
+.obs-unsupported{font-family:var(--bs-font-sans-serif);font-weight:400;font-style:italic;font-size:12px;color:var(--bs-secondary-color);}
+
+/* ---------- Hourly table ---------- */
+.hourly-title h2{font-size:18px;font-weight:700;margin:0;}
+.hourly-title span{font-size:12px;color:var(--bs-secondary-color);}
+table.hourly{min-width:760px;}
+table.hourly th, table.hourly td{text-align:center;font-size:13px;vertical-align:middle;}
+table.hourly th{font-size:11px;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;font-weight:600;border-bottom:1px solid var(--bs-border-color);}
+table.hourly td.rowlabel, table.hourly th.rowlabel{text-align:left;position:sticky;left:0;background:var(--bs-card-bg);font-weight:700;color:var(--bs-secondary-color);}
+table.hourly img.hicon{width:28px;height:28px;display:block;margin:0 auto 4px;object-fit:contain;}
+
+/* ---------- Meteocons contrast filter, light theme only ---------- */
+/* The fill-style icons have light highlights that wash out on a pale
+   background — stack drop-shadows for a defined edge (slightly lighter
+   touch than the original pass). */
+[data-bs-theme="light"] .hero-icon,
+[data-bs-theme="light"] .dicon,
+[data-bs-theme="light"] .hicon,
+[data-bs-theme="light"] .mlabel-icon{
+  filter:
+    drop-shadow(0 0.5px 1px rgba(20,24,27,.40))
+    drop-shadow(0 1.5px 4px rgba(20,24,27,.26))
+    drop-shadow(0 4px 7px rgba(20,24,27,.18));
+}
+
+/* ---------- Meteocons contrast filter, dark theme only ---------- */
+/* Darker icon details (e.g. the animated rain streaks) are low-contrast
+   against the charcoal background — a light glow, not a shadow, is what
+   separates them here. brightness/contrast lift the icon's own dark
+   strokes so the rain animation actually reads while it plays. */
+[data-bs-theme="dark"] .hero-icon,
+[data-bs-theme="dark"] .dicon,
+[data-bs-theme="dark"] .hicon,
+[data-bs-theme="dark"] .mlabel-icon{
+  filter:
+    brightness(1.45) contrast(1.2)
+    drop-shadow(0 0 2px rgba(255,255,255,.32))
+    drop-shadow(0 0 8px rgba(255,255,255,.18));
+}
+table.hourly .temp-cell{font-family:'JetBrains Mono',monospace;font-weight:600;}
+table.hourly .rain-cell{color:var(--bw-sky);font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+/* ---------- Sun/pollen/aq strip ---------- */
+.strip-card .slabel{font-size:12px;color:var(--bs-secondary-color);margin-bottom:10px;display:flex;justify-content:space-between;}
+.sun-moon-card{display:flex;flex-direction:column;gap:4px;}
+.sm-times-row{display:flex;justify-content:space-between;align-items:center;}
+.sm-time-item{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:13.5px;}
+.sm-time-item--right{flex-direction:row-reverse;}
+.sm-glyph{display:inline-flex;line-height:0;}
+.sm-glyph--sun-rise,.sm-glyph--sun-set{color:var(--bw-accent);}
+.sm-glyph--moon{color:var(--bs-secondary-color);}
+.sm-arc-wrap{margin:4px 0 0;}
+.sm-arc-wrap svg{width:100%;height:auto;display:block;}
+.sm-daylight{font-size:12.5px;color:var(--bs-body-color);text-align:center;margin:2px 0 6px;}
+.sm-phase-row{display:flex;align-items:center;gap:10px;justify-content:center;}
+.sm-phase-icon svg{display:block;}
+.sm-phase-name{font-weight:700;font-size:13.5px;}
+.sm-phase-pct{font-size:13px;color:var(--bs-secondary-color);}
+.sm-phase-pct b{color:var(--bs-body-color);}
+.sm-details{text-align:center;font-size:12.5px;margin-top:4px;}
+.sm-details a{color:var(--bw-danger);text-decoration:none;}
+.sm-details a:hover{text-decoration:underline;}
+/* ---------- Sky Map card ----------
+   Adapted from a real card on the user's PHP site (output of the
+   weewx-skymap-almanac extension) — deliberately NOT reusing that
+   source's own inline theme (a separate light pastel-blue palette with
+   its own night-theme toggle); it's restyled with this site's existing
+   strip-card/slabel conventions so it follows the one global theme
+   toggle already on this page instead of fighting it. The SVG itself
+   (axis/labels in particular) uses fill="currentColor"/stroke=
+   "currentColor" so at least the grid/text already follows light/dark
+   automatically; the sky-circle background and body colours are left
+   exactly as the extension renders them, since those come from real
+   backend output this page has no business overriding. */
+.skymap-card{display:flex;flex-direction:column;}
+.skymap-svg-wrap{display:flex;justify-content:center;align-items:center;margin:4px 0;}
+.skymap-svg-wrap svg{width:100%;height:auto;max-width:460px;display:block;}
+.skymap-footnote{font-size:11px;color:var(--bs-secondary-color);font-style:italic;margin-top:8px;text-align:center;}
+/* Almanac information modal */
+.almanac-col-title{font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.almanac-row{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--bs-tertiary-bg);border-radius:10px;padding:11px 16px;margin-bottom:8px;}
+.almanac-row span:first-child{color:var(--bs-secondary-color);font-size:14px;}
+.almanac-row span:last-child{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:17px;color:var(--bs-body-color);white-space:nowrap;}
+.almanac-row--phase .almanac-phase-value{display:flex;flex-direction:column;align-items:flex-end;font-family:inherit;}
+.almanac-row--phase b{font-family:'Open Sans',sans-serif;font-size:16px;font-weight:700;}
+.almanac-row--phase small{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;color:var(--bs-secondary-color);}
+.almanac-footer-note{font-size:13px;color:var(--bs-secondary-color);margin-top:4px;}
+.almanac-footer-note strong{color:var(--bs-body-color);}
+.almanac-last-updated{font-size:12.5px;color:var(--bs-secondary-color);margin-right:auto;}
+.level-badge{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:20px;}
+.level-dot{width:10px;height:10px;border-radius:50%;}
+.level-low{background:var(--bw-good);} .level-mod{background:var(--bw-accent);} .level-high{background:var(--bw-danger);}
+.strip-detail{font-size:13px;color:var(--bs-secondary-color);margin-top:6px;}
+.species-breakdown{margin-top:12px;padding-top:10px;border-top:1px solid var(--bs-border-color);display:flex;flex-direction:column;gap:6px;}
+.species-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;}
+.species-row .species-name{color:var(--bs-secondary-color);display:flex;align-items:center;gap:6px;}
+.species-row .species-name .level-dot{width:7px;height:7px;flex:none;}
+.species-row .species-value{font-family:'JetBrains Mono',monospace;font-weight:600;text-align:right;}
+
+.unit-select{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.03em;
+  color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bs-body-color);
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23E8EEF5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+.unit-select:focus{color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bw-accent);box-shadow:0 0 0 .25rem rgba(232,163,61,.25);}
+.unit-select option{color:#000;background-color:#fff;}
+
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+
+@keyframes dot-pulse{
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.7); opacity: .45; }
+}
+#liveStatusDot.pulse{ animation: dot-pulse 1.4s ease-in-out infinite; }

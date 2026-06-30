@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>SǢL — Steeple Claydon</title>
+<title>steepleclaydonweather.uk</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">
 <style>
+/* ===================== Shared palette/components (from index.html's <head>) =====================
+   Pulled directly from index.html's own inline <style> block, same as
+   locationforecast.html does — see that file's comment for why this is
+   copied by hand rather than linked from style.css (which has drifted
+   from what's actually live; see locationforecast.html / the chat
+   history around that for the full story). If index.html's <head>
+   changes again, this block needs the same update. -->
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ===================== Birch palette mapped onto Bootstrap CSS vars ===================== */
@@ -101,6 +103,7 @@ body{
 .bark-rule .lenticel{stroke:var(--bw-line);stroke-width:1.5;}
 
 /* ---------- Top bar ---------- */
+.brand-link{color:inherit;text-decoration:none;}
 .brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
 .brand-mark .leaf{color:var(--bw-accent);}
 .brand-sub{font-size:11px;color:var(--bs-secondary-color);letter-spacing:.06em;}
@@ -112,10 +115,11 @@ body{
 #themeMenu .dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12.5px;}
 #themeMenu .theme-check{width:14px;color:var(--bw-accent);}
 #themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
-.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;}
+.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;white-space:nowrap;}
 .nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
 
-.navbar-toggler{border:none;padding:6px 10px;}
+.navbar-toggler{border:none;padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;}
+.navbar-toggler[aria-expanded="true"]{display:inline-flex;align-items:center;justify-content:center;}
 .navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
 .navbar-toggler-icon{
   background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F2F6FA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
@@ -407,310 +411,295 @@ footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mon
   opacity:0;pointer-events:none;
   filter:blur(.5px);
 }
-.live-status-ripple.ping{ animation: dot-ripple .65s ease-out 3; }
+.live-status-ripple.ping{ animation: dot-ripple 1.3s ease-out; }
 @keyframes dot-ripple{
   0%   { width:8px;  height:8px;  margin:-4px 0 0 -4px;   opacity:.55; }
   100% { width:72px; height:72px; margin:-36px 0 0 -36px; opacity:0; }
 }
 </style>
+<style>
+/* ===================== Gallery UI (new to this page) ===================== */
+.gallery-empty{max-width:640px;}
+.gallery-empty .card{padding:28px 24px;}
+.gallery-empty h2{font-size:18px;font-weight:700;margin-bottom:8px;}
+.gallery-empty p{color:var(--bs-secondary-color);font-size:14px;}
+.gallery-help{margin-top:18px;}
+.gallery-help summary{cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--bw-sky);}
+.gallery-help pre{
+  background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);border-radius:var(--bw-radius-sm);
+  padding:14px 16px;font-size:12px;line-height:1.5;margin-top:10px;overflow-x:auto;white-space:pre;
+}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;margin-bottom:8px;}
+.gallery-card{display:flex;flex-direction:column;overflow:hidden;}
+.gallery-frame-wrap{position:relative;width:100%;background:var(--bs-tertiary-bg);overflow:hidden;border-radius:var(--bw-radius-sm) var(--bw-radius-sm) 0 0;}
+.gallery-frame-wrap iframe{display:block;width:100%;height:100%;border:0;position:absolute;inset:0;}
+.gallery-card-body{padding:12px 14px 14px;}
+.gallery-card-title{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px;}
+.gallery-card-notes{font-size:12.5px;color:var(--bs-secondary-color);margin-top:4px;}
+.gallery-cat-icon{font-size:15px;line-height:1;flex-shrink:0;}
+.gallery-skip-note{font-size:11.5px;color:var(--bs-secondary-color);font-style:italic;margin-top:-4px;margin-bottom:14px;}
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+</style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-md py-3">
-  <div class="container-xl">
-    <div class="d-flex align-items-baseline gap-2">
-      <span class="brand-mark"><span class="leaf">⌃</span> SǢL</span>
-    </div>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navCollapse" aria-controls="navCollapse" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navCollapse">
-      <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-1 ms-md-4 mt-3 mt-md-0">
-        <div class="dropdown">
-          <button class="btn nav-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Charts</button>
-          <ul class="dropdown-menu font-mono">
-            <li><a class="dropdown-item" href="charts.html?type=temperature">Temperature</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=wind">Wind &amp; Gust</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=rain">Rain &amp; Rain Rate</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=barometer">Barometer</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=solaruv">Solar &amp; UV</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=cloud">Cloud &amp; Visibility</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=lightning">Lightning</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=pollen">Pollen</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=airquality">Air Quality</a></li>
-            <li><a class="dropdown-item" href="charts.html?type=gases">Greenhouse Gases</a></li>
-         </ul>
-        </div>
-        <div class="dropdown">
-          <button class="btn nav-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Records</button>
-          <ul class="dropdown-menu font-mono">
-            <li><a class="dropdown-item" href="records.html?type=temperature">Temperature</a></li>
-            <li><a class="dropdown-item" href="records.html?type=wind">Wind &amp; Gust</a></li>
-            <li><a class="dropdown-item" href="records.html?type=rain">Rain &amp; Rain Rate</a></li>
-            <li><a class="dropdown-item" href="records.html?type=barometer">Barometer</a></li>
-          </ul>
-        </div>
-        <a href="climate.html" class="btn nav-btn">Climate</a>
-        <a href="almanac.html" class="btn nav-btn">Almanac</a>
-        <span class="nav-scroll-sep d-none d-md-inline"></span>
-        <a href="locationforecast.html" class="btn nav-btn">Forecasts</a>
-        <a href="#observationsSection" class="btn nav-btn nav-scroll-btn">Observations</a>
-      </div>
-      <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2 ms-md-auto mt-3 mt-md-0">
-        <select class="form-select form-select-sm unit-select rounded-pill" id="unitSystem" title="Unit system" style="width:auto;">
-          <option value="uk">UK</option>
-          <option value="us">US</option>
-          <option value="metric">Metric</option>
-          <option value="scandi">Scandinavian</option>
-          <option value="canada">Canada</option>
-          <option value="aviation">Aviation</option>
-          <option value="beaufort">Beaufort wind</option>
-        </select>
-        <div class="dropdown">
-          <button class="btn btn-outline-secondary icon-btn dropdown-toggle-no-caret" id="themeToggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Theme" aria-label="Theme">
-            <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5.64 5.64l1.42 1.42M16.95 16.95l1.42 1.42M5.64 18.36l1.42-1.42M16.95 7.05l1.42-1.42"/></svg>
-            <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36A5.4 5.4 0 0 1 12 3z"/></svg>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end font-mono" aria-labelledby="themeToggle" id="themeMenu">
-            <li><button class="dropdown-item" type="button" data-theme-choice="auto">Auto <span class="theme-check"></span></button></li>
-            <li><button class="dropdown-item" type="button" data-theme-choice="light">Light <span class="theme-check"></span></button></li>
-            <li><button class="dropdown-item" type="button" data-theme-choice="dark">Dark <span class="theme-check"></span></button></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<div class="container-xl">
-  <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2">
-    <h1 class="fw-bold fs-2 mb-0 mt-1" id="pageLocationTitle">Steeple Claydon, UK</h1>
-    <div class="text-end">
-      <div class="font-mono small d-flex align-items-center gap-2" style="color:var(--bs-secondary-color);">
-        <span class="live-status-wrap">
-          <span id="liveStatusDot" title="Connecting…" style="background:var(--bs-secondary-color);"></span>
-          <span id="liveStatusRipple" class="live-status-ripple"></span>
-        </span>
-        <span id="liveStatusLabel">CONNECTING</span> · UPDATED <span id="liveClock">07:42:18</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="bark-rule"><svg preserveAspectRatio="none" viewBox="0 0 800 14"><line class="lenticel" x1="0" y1="3" x2="800" y2="3"/><line class="lenticel" x1="0" y1="9" x2="240" y2="9"/><line class="lenticel" x1="300" y1="9" x2="520" y2="9"/><line class="lenticel" x1="580" y1="9" x2="800" y2="9"/></svg></div>
+<!-- NAVBAR — shared navbar.html include, same as records.html/charts.html/
+     climate.html/locationforecast.html (not index.html — see navbar.html's
+     own header comment). -->
+<div w3-include-html="navbar.html"></div>
 
 <div class="container-xl mt-3">
 
-  <!-- CURRENT CONDITIONS -->
-  <div class="cc-grid">
-    <div class="card cc-main p-4">
-      <div class="hero-now-label mb-1">Right Now</div>
-      <div class="d-flex align-items-center gap-3">
-        <img class="hero-icon" id="heroIcon" src="https://cdn.meteocons.com/3.0.0-next.10/svg/fill/partly-cloudy-day.svg" alt="Cloudy" width="74" height="74">
-        <div class="hero-temp" id="heroTemp">20°</div>
-      </div>
-      <div class="hero-cond mt-1" id="heroCond">Cloudy, light breeze from the SW</div>
-      <div class="cc-badges d-flex flex-wrap gap-2 mt-2">
-        <span class="pollen-pill" id="pollenPillHero">🌿 Pollen: Very High</span>
-        <span class="aqi-pill" id="aqiPillHero" style="display:none;"></span>
-        <span class="uv-pill" id="uvPillHero" style="display:none;"></span>
-      </div>
-      <div class="cc-stats-row d-flex flex-wrap gap-4 mt-3 pt-3">
-        <div class="cc-stat"><span class="cc-stat-label">Feels like</span><span class="cc-stat-value" id="feelsLike">19°</span></div>
-        <div class="cc-stat"><span class="cc-stat-label">High</span><span class="cc-stat-value" id="ccHigh">--</span></div>
-        <div class="cc-stat"><span class="cc-stat-label">Low</span><span class="cc-stat-value" id="ccLow">--</span></div>
-      </div>
-      <div class="hero-suntimes d-flex flex-wrap align-items-center gap-3 mt-3 pt-3">
-        <span class="hero-suntime" title="Sunrise">
-          <span class="hero-suntime-icon hero-suntime-icon--sun-rise"><svg viewBox="0 0 18 14" width="15" height="12"><path d="M2 13 A7 7 0 0 1 16 13 Z" fill="currentColor"/></svg></span>
-          <b id="heroSunRise">--:--</b>
-        </span>
-        <span class="hero-suntime" title="Sunset">
-          <span class="hero-suntime-icon hero-suntime-icon--sun-set"><svg viewBox="0 0 18 14" width="15" height="12"><path d="M2 1 A7 7 0 0 0 16 1 Z" fill="currentColor"/></svg></span>
-          <b id="heroSunSet">--:--</b>
-        </span>
-        <span class="hero-suntime" title="Moonrise">
-          <span class="hero-suntime-icon hero-suntime-icon--moon"><svg viewBox="0 0 18 14" width="15" height="12"><path d="M2 13 A7 7 0 0 1 16 13" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
-          <b id="heroMoonRise">--:--</b>
-        </span>
-        <span class="hero-suntime" title="Moonset">
-          <span class="hero-suntime-icon hero-suntime-icon--moon"><svg viewBox="0 0 18 14" width="15" height="12"><path d="M2 1 A7 7 0 0 0 16 1" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
-          <b id="heroMoonSet">--:--</b>
-        </span>
-      </div>
-    </div>
+  <h1 class="fw-bold fs-2 mb-1">Gallery</h1>
+  <p class="mb-4" style="color:var(--bs-secondary-color);max-width:640px;">
+    Maps, webcams, time-lapses, and anything else worth embedding —
+    configured by whoever runs this station, not hardcoded into the page.
+    See below if nothing's showing up yet.
+  </p>
 
-    <div class="cc-mini-grid">
-      <div class="card cc-mini p-3">
-        <div class="cc-mini-label">Barometer</div>
-        <div class="cc-mini-value" id="pressureHero">1015 hPa</div>
-        <div class="cc-mini-sub">Air density <b id="ccAirDensity">--</b></div>
-      </div>
-      <div class="card cc-mini p-3">
-        <div class="cc-mini-label">Humidity</div>
-        <div class="cc-mini-value" id="humidityHero">70%</div>
-      </div>
-      <div class="card cc-mini p-3">
-        <div class="cc-mini-label">Dew Point</div>
-        <div class="cc-mini-value" id="ccDewPoint">--</div>
-        <div class="cc-mini-sub">ET <b id="ccEt">--</b></div>
-        <div class="cc-mini-sub">VPD <b id="ccVpd">--</b></div>
-      </div>
-      <div class="card cc-mini p-3">
-        <div class="cc-mini-label">Rain</div>
-        <div class="cc-mini-value" id="ccRainTotal">0 mm</div>
-        <div class="cc-mini-sub" id="ccRainRate">0 mm/h</div>
-        <div class="cc-mini-sub" id="rainNextRow">Next hour <b id="rainNextHero">20%</b></div>
-      </div>
-    </div>
+  <div id="galleryContent"><!-- populated by JS --></div>
 
-    <div class="card cc-wind p-3">
-      <div class="cc-mini-label">Wind</div>
-      <div class="cc-wind-row d-flex align-items-center gap-3 mt-1">
-        <div class="wind-compass-mini">
-          <svg viewBox="0 0 80 80" class="wind-compass-mini-ring" aria-hidden="true">
-            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--bs-secondary-color)" stroke-width="6" opacity=".5"/>
-            <g id="windCompassMiniArrow" class="wind-compass-mini-arrow">
-              <path d="M40 24 L48 6 L32 6 Z" fill="var(--bw-danger)"/>
-            </g>
-          </svg>
-          <div class="wind-compass-mini-label">
-            <span id="gustDirHero">SW</span>
-            <span id="ccWindDirDeg"></span>
-          </div>
-        </div>
-        <div class="cc-wind-stats d-flex gap-4">
-          <div class="cc-stat"><span class="cc-stat-label">Speed</span><span class="cc-stat-value" id="ccWindSpeed">--</span></div>
-          <div class="cc-stat"><span class="cc-stat-label">Gust</span><span class="cc-stat-value" id="gustHero">19 mph</span></div>
-          <div class="cc-stat"><span class="cc-stat-label">Dir</span><span class="cc-stat-value" id="ccGustDirDeg">227°</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div id="galleryEmptyState" class="gallery-empty" style="display:none;">
+    <div class="card">
+      <h2>No gallery items configured yet</h2>
+      <p>This page reads <code>jsondata/gallery.json</code>, which is generated from entries in <code>weewx.conf</code> — there aren't any yet (or the file hasn't been generated).</p>
+      <details class="gallery-help">
+        <summary>How to add one (weewx.conf + skin.conf)</summary>
+        <p class="mt-2 mb-1" style="font-size:13px;">Add numbered <code>gallery_item&lt;N&gt;_*</code> keys under this skin's <code>[[[Extras]]]</code> in <code>weewx.conf</code>:</p>
+<pre>[StdReport]
+    [[CommunityWeather]]          &lt;- your skin's stanza name, not literally this
+        skin = community_weather
+        [[[Extras]]]
+            gallery_item1_title    = Live Radar
+            gallery_item1_category = map
+            gallery_item1_src      = https://example.com/embed/radar
+            gallery_item1_aspect   = 4:3
+            gallery_item1_notes    = Refreshes every 5 minutes
 
-  <!-- INSTRUMENTS -->
-  <!--div class="section-label">Instruments</div>
-  <div class="instrument-row d-flex flex-wrap gap-3">
-    <div class="instrument-col instrument-col--narrow">
-      <div class="card instrument-card h-100">
-        <div class="gauge-wrap gauge-wrap--thermometer">
-          <svg id="thermoSvg" class="thermo-svg" viewBox="0 0 130 200" aria-label="Outdoor temperature thermometer"><!-- populated by buildThermometerSvg() --></svg>
-          <!--div class="gauge-caption" id="thermoCaption">Feels like 19°C</div>
-        </div>
-      </div>
+            gallery_item2_title    = Garden Webcam
+            gallery_item2_category = webcam
+            gallery_item2_src      = https://example.com/embed/cam1
+            gallery_item2_aspect   = 16:9</pre>
+        <p class="mt-2 mb-1" style="font-size:13px;"><code>category</code> is one of <code>map</code> / <code>webcam</code> / <code>timelapse</code> — anything else (or left blank) lands under "Other". <code>aspect</code> and <code>notes</code> are optional (aspect defaults to 16:9).</p>
+        <p class="mt-2 mb-0" style="font-size:13px;">Then make sure <code>gallery.json.tmpl</code> (shipped alongside this page) is being generated by <code>skin.conf</code>'s <code>[CheetahGenerator]</code> section — mirror whatever stanza this skin already uses for its other <code>*_json.tmpl</code> files (e.g. <code>charts_json.tmpl</code>) so it lands at <code>jsondata/gallery.json</code>. See <code>gallery.json.tmpl</code>'s own header comment for the full, exact instructions and a worked example.</p>
+      </details>
     </div>
-    <div class="instrument-col">
-      <div class="card instrument-card h-100">
-        <div class="gauge-wrap">
-          <div id="windCompassEchartsWrap" class="wind-compass-wrap" aria-label="Wind direction compass"></div>
-        </div>
-      </div>
-    </div>
-    <div class="instrument-col">
-      <div class="card instrument-card h-100">
-        <div class="gauge-wrap">
-          <div id="windCombinedEchartsWrap" class="wind-compass-wrap" aria-label="Wind speed and gust gauge"></div>
-        </div>
-      </div>
-    </div>
-    <div class="instrument-col">
-      <div class="card instrument-card h-100">
-        <div class="gauge-wrap">
-          <div id="baroEchartsWrap" class="wind-compass-wrap" aria-label="Barometer gauge"></div>
-        </div>
-      </div>
-    </div>
-    <div class="instrument-col instrument-col--narrow" id="rainGaugeCol">
-      <div class="card instrument-card h-100">
-        <div class="gauge-wrap gauge-wrap--raingauge">
-          <svg id="rainGaugeSvg" class="raingauge-svg" viewBox="0 0 130 200" aria-label="Today's rainfall measuring cylinder"><!-- populated by buildRainGaugeSvg() --></svg>
-          <!--div class="gauge-caption" id="rainGaugeCaption">Rain rate: 0 mm/hr</div>
-        </div>
-      </div>
-    </div>
-  </div-->
-
-  <div id="warningContainer" class="mt-3"><!-- populated by JS; hidden entirely when no active alerts --></div>
-
-  <!-- FORECAST -->
-  <div class="section-label" id="forecastSection">Forecast</div>
-  <div class="day-strip d-flex flex-wrap gap-3" id="dayStrip"><!-- populated by JS --></div>
-
-  <!-- HOURLY -->
-  <div class="card mt-4 p-4">
-    <div class="hourly-title d-flex align-items-baseline justify-content-between mb-3">
-      <h2 id="hourlyDayTitle">Today — hourly</h2>
-      <span>Forecast source: Open‑Meteo</span>
-    </div>
-    <div class="table-responsive">
-      <table class="hourly table table-borderless mb-0" id="hourlyTable"><!-- populated by JS --></table>
-    </div>
-  </div>
-
-  <!-- TODAY'S OBSERVATIONS -->
-  <div class="section-label" id="observationsSection">Today's Observations</div>
-  <div class="row g-3" id="metricGrid"><!-- populated by JS --></div>
-
-  <!-- SKY & SOLAR -->
-  <div class="section-label">Sky &amp; Solar</div>
-  <div class="row g-3" id="skyGrid"><!-- populated by JS --></div>
-
-  <!-- AIR QUALITY -->
-  <div class="section-label">Air Quality</div>
-  <div class="row g-3">
-    <div class="col-12 col-md-4">
-      <div class="card strip-card p-3 h-100">
-        <div class="slabel"><span>Pollen</span><span id="pollenSrc">WeeWX sensor</span></div>
-        <div class="level-badge"><span class="level-dot level-high" id="pollenDot"></span><span id="pollenLevel">Very High</span></div>
-        <div class="strip-detail" id="pollenDetail">Very high grass pollen, high weed pollen</div>
-        <div class="species-breakdown" id="pollenBreakdown">
-          <div class="species-row"><span class="species-name"><span class="level-dot level-high"></span>Grass</span><span class="species-value">High (32)</span></div>
-          <div class="species-row"><span class="species-name"><span class="level-dot level-mod"></span>Mugwort</span><span class="species-value">Moderate (12)</span></div>
-          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>Birch</span><span class="species-value">Low (4)</span></div>
-          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>Alder</span><span class="species-value">Low (2)</span></div>
-          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>Olive</span><span class="species-value">Low (0)</span></div>
-          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>Ragweed</span><span class="species-value">Low (0)</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="card strip-card p-3 h-100">
-        <div class="slabel"><span>Air quality</span><span id="aqSrc">WeeWX sensor</span></div>
-        <div class="level-badge"><span class="level-dot level-low" id="aqDot"></span><span id="aqLevel">Low</span></div>
-        <div class="strip-detail" id="aqDetail">Enjoy your usual outdoor activities</div>
-        <div class="species-breakdown" id="aqBreakdown">
-          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>PM1</span><span class="species-value">AQI 18 (Low)</span></div>
-          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>PM2.5</span><span class="species-value">AQI 22 (Low)</span></div>
-          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>PM4</span><span class="species-value">AQI 15 (Low)</span></div>
-          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>PM10</span><span class="species-value">AQI 9 (Low)</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-md-4" id="ghgCardSlot"><!-- populated by JS --></div>
   </div>
 
 </div>
 
 <footer class="container-xl mt-5 pt-3 border-top d-flex justify-content-between flex-wrap gap-2">
-  <span>Re-ImaginedWX — a WeeWX 5 skin</span>
-  <span>Forecast: Open‑Meteo · Warnings: OpenWeatherMap + Met Office RSS (UK backup) · Pollen &amp; air quality: WeeWX sensors · Live conditions: WeeWX loop data</span>
+  <span>Sǣl</span>
+  <span>Gallery items: configured via weewx.conf</span>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-<!-- ?v=N defeats a Cloudflare edge cache serving a stale copy of this
-     file after an update — bump N every time the matching .js file
-     changes. Discovered this was needed when a cache-busting fix inside
-     allseasons.js itself kept silently failing to reach the browser:
-     `curl -I` on the live URL showed cf-cache-status: HIT with a
-     content-length matching an OLDER version, hours after the real
-     file had been replaced on the server. {cache:'no-store'} on a
-     fetch() call only stops the browser's own cache — it does nothing
-     about an edge cache the request never gets past in the first
-     place, since cloudflared serves it as the very first hop. -->
-<script src="instruments.js?v=cbe51906"></script>
-<script src="forecast.js?v=bafdd194"></script>
-<script src="allseasons.js?v=e742ea47"></script>
+<script>
+/* =====================================================================
+   gallery.html — admin-configured maps / webcams / time-lapses / misc,
+   each rendered as an embedded iframe.
+
+   Data source: jsondata/gallery.json, generated by gallery.json.tmpl
+   (shipped alongside this page) from numbered gallery_item<N>_* keys
+   under this skin's [[[Extras]]] in weewx.conf — see that template's
+   own header comment for the full weewx.conf/skin.conf wiring, and the
+   "How to add one" panel below the gallery (shown when there's nothing
+   to display yet) for the short version.
+
+   Security note: unlike a typical "embed any URL" page, the iframe
+   sources here come from the station admin's own weewx.conf, not from
+   any visitor input — there's no untrusted-user-input path into this
+   list. That's why these iframes aren't sandboxed: a sandbox attribute
+   tight enough to matter would also break the scripts most real map/
+   webcam embeds need to function. If this page ever grows a way for
+   *visitors* (rather than the admin) to add a URL, that assumption no
+   longer holds and this needs revisiting.
+   ===================================================================== */
+
+const GALLERY_JSON_URL = './jsondata/gallery.json';
+const GALLERY_POLL_MS = 10 * 60 * 1000; // matches forecast.js's poll cadence — admin edits are rare, not real-time
+
+const CATEGORY_META = {
+  map:       {label:'Maps',         icon:'🗺️', order:0},
+  webcam:    {label:'Webcams',      icon:'📷', order:1},
+  timelapse: {label:'Time-lapses',  icon:'🎬', order:2},
+  misc:      {label:'Other',        icon:'🖼️', order:3},
+};
+function categoryMeta(cat){ return CATEGORY_META[cat] || CATEGORY_META.misc; }
+
+function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// "16:9" / "4:3" / "1:1" → a CSS aspect-ratio value; anything malformed
+// falls back to 16:9 rather than producing a broken/zero-height frame.
+function parseAspect(a){
+  if(typeof a === 'string' && /^\d+(\.\d+)?:\d+(\.\d+)?$/.test(a.trim())){
+    return a.trim().replace(':','/');
+  }
+  return '16/9';
+}
+
+let skippedCount = 0;
+
+function sanitizeItems(raw){
+  skippedCount = 0;
+  if(!Array.isArray(raw)) return [];
+  const out = [];
+  raw.forEach(item => {
+    if(!item || !item.title || !item.src){ skippedCount++; return; }
+    let url;
+    try{ url = new URL(item.src, window.location.href); }catch(e){ skippedCount++; return; }
+    if(url.protocol !== 'https:' && url.protocol !== 'http:'){ skippedCount++; return; }
+    out.push({
+      id: item.id,
+      title: String(item.title),
+      category: (item.category || 'misc').toLowerCase(),
+      src: url.href,
+      aspect: parseAspect(item.aspect),
+      notes: item.notes ? String(item.notes) : '',
+    });
+  });
+  return out;
+}
+
+function groupByCategory(items){
+  const groups = {};
+  items.forEach(item => {
+    const key = CATEGORY_META[item.category] ? item.category : 'misc';
+    (groups[key] = groups[key] || []).push(item);
+  });
+  return Object.entries(groups).sort((a,b) => categoryMeta(a[0]).order - categoryMeta(b[0]).order);
+}
+
+function renderGallery(items){
+  const wrap = document.getElementById('galleryContent');
+  const emptyState = document.getElementById('galleryEmptyState');
+  if(!items.length){
+    wrap.innerHTML = '';
+    emptyState.style.display = '';
+    return;
+  }
+  emptyState.style.display = 'none';
+  const groups = groupByCategory(items);
+  wrap.innerHTML = groups.map(([catKey, catItems]) => {
+    const meta = categoryMeta(catKey);
+    const cards = catItems.map(item => `
+      <div class="card gallery-card h-100">
+        <div class="gallery-frame-wrap" style="aspect-ratio:${item.aspect};">
+          <iframe src="${item.src}" title="${escapeHtml(item.title)}" loading="lazy" allow="fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="gallery-card-body">
+          <div class="gallery-card-title">${escapeHtml(item.title)}</div>
+          ${item.notes ? `<div class="gallery-card-notes">${escapeHtml(item.notes)}</div>` : ''}
+        </div>
+      </div>`).join('');
+    return `
+      <div class="section-label">${meta.icon} ${meta.label}</div>
+      <div class="gallery-grid">${cards}</div>`;
+  }).join('');
+
+  if(skippedCount > 0){
+    wrap.insertAdjacentHTML('afterbegin', `<div class="gallery-skip-note">${skippedCount} gallery ${skippedCount===1?'entry':'entries'} skipped — missing a title/src, or an unsupported URL scheme. Check jsondata/gallery.json.</div>`);
+  }
+}
+
+async function pollGallery(){
+  try{
+    const res = await fetch(GALLERY_JSON_URL, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const raw = await res.json();
+    renderGallery(sanitizeItems(raw));
+  }catch(e){
+    console.warn('Sǣl gallery: fetch failed —', e.message);
+    // Leave whatever's already rendered in place on a transient failure;
+    // only fall back to the empty/help state if nothing has ever loaded.
+    if(!document.getElementById('galleryContent').innerHTML.trim()){
+      document.getElementById('galleryEmptyState').style.display = '';
+    }
+  }
+}
+
+pollGallery();
+setInterval(pollGallery, GALLERY_POLL_MS);
+
+/* ===================== Hide the current page's own nav link =====================
+   Once navbar.html has loaded, hide whichever top-level nav button
+   points at the page we're already on (e.g. no "Climate" button while
+   actually on climate.html) — there's nothing useful for it to do once
+   you're already there. Scoped to a.nav-btn specifically so dropdown
+   items (Charts/Records' sub-views, which all share one href base but
+   differ by ?type=) are never matched/hidden by this — only plain
+   single-destination buttons are. */
+function hideCurrentNavLink(){
+  const here = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  document.querySelectorAll('#navCollapse a.nav-btn[href]').forEach(a => {
+    const target = a.getAttribute('href').split('?')[0].split('#')[0].toLowerCase();
+    if(target && target === here) a.style.display = 'none';
+  });
+}
+
+/* ===================== HTML includes (w3-include-html) =====================
+   Same pattern/implementation as index.html's includeHTML() — see that
+   file's comment for the full rationale. navbar.html is the only
+   include on this page. */
+function includeHTML(callback){
+  const elements = document.querySelectorAll('[w3-include-html]');
+  let pending = elements.length;
+  if(pending === 0){ if(callback) callback(); return; }
+  elements.forEach(el => {
+    const file = el.getAttribute('w3-include-html');
+    fetch(file, {cache:'no-store'})
+      .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
+      .then(html => { el.innerHTML = html; el.removeAttribute('w3-include-html'); })
+      .catch(e => {
+        console.warn('Sǣl gallery: include failed for', file, '—', e.message);
+        el.innerHTML = '';
+      })
+      .finally(() => { pending--; if(pending === 0 && callback) callback(); });
+  });
+}
+
+/* ===================== Theme: Auto / Light / Dark =====================
+   Identical pattern to locationforecast.html/climate.html. */
+const root = document.documentElement;
+let themeMode = localStorage.getItem('bircheswx-theme-mode') || 'auto';
+function resolveTheme(){
+  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+function applyTheme(){
+  root.setAttribute('data-bs-theme', resolveTheme());
+  syncThemeNavUI();
+}
+function syncThemeNavUI(){
+  const sunIcon = document.getElementById('themeIconSun');
+  if(!sunIcon) return;
+  const resolved = resolveTheme();
+  sunIcon.style.display = resolved==='light' ? '' : 'none';
+  document.getElementById('themeIconMoon').style.display = resolved==='dark' ? '' : 'none';
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.classList.toggle('active-theme', el.dataset.themeChoice===themeMode);
+  });
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+  if(themeMode==='auto') applyTheme();
+});
+applyTheme();
+
+// navbar.html has to be in the DOM before #themeMenu exists to attach
+// listeners to — see includeHTML() above. This page has no use for
+// #unitSystem (nothing here is a unit), so unlike the other pages it
+// doesn't wire a change listener for it — the selector still renders
+// (it's part of the shared include), it's just inert here.
+includeHTML(() => {
+  hideCurrentNavLink();
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      themeMode = el.dataset.themeChoice;
+      localStorage.setItem('bircheswx-theme-mode', themeMode);
+      applyTheme();
+    });
+  });
+  syncThemeNavUI();
+});
+</script>
 </body>
 </html>
