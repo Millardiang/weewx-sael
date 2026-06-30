@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>steepleclaydonweather.uk</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ===================== Birch palette mapped onto Bootstrap CSS vars =====================
+   Identical to birches.html — kept in sync by hand for now since this is
+   still a two-file prototype. If a third page gets added, this whole
+   :root/[data-bs-theme] block should move to a shared style.css instead
+   of being copy-pasted a third time. */
+:root,
+[data-bs-theme="light"]{
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-lime:#C9DA1E;
+  --bw-lime-soft:#2E331A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#2C5478;
+  --bw-instrument-headspace:#495E74;
+  --bw-instrument-border:#E8EEF5;
+  --bw-radius:18px;
+  --bw-radius-sm:10px;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#2E5C84;
+  --bs-body-color:#F2F6FA;
+  --bs-secondary-color:#AFC8DE;
+  --bs-tertiary-bg:#1B3A57;
+  --bs-secondary-bg:#234870;
+  --bs-border-color:#2C5478;
+  --bs-border-color-translucent:#2C5478;
+  --bs-card-bg:#16314D;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+  --bs-warning-rgb:232,163,61;
+  --bs-font-sans-serif:'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-bs-theme="dark"]{
+  --bw-instrument-headspace:#222A2E;
+  --bw-instrument-border:#343E43;
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#343E43;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#14181B;
+  --bs-body-color:#EAEFE9;
+  --bs-secondary-color:#8C9A95;
+  --bs-tertiary-bg:#222A2E;
+  --bs-secondary-bg:#2A3338;
+  --bs-border-color:#343E43;
+  --bs-border-color-translucent:#343E43;
+  --bs-card-bg:#1B2125;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+}
+
+body{
+  font-family:var(--bs-font-sans-serif);
+  padding-bottom:48px;
+  transition:background-color .25s ease, color .25s ease;
+}
+.font-mono{font-family:'JetBrains Mono','Courier New',monospace;}
+.card{border-radius:var(--bw-radius-sm); box-shadow:var(--bw-shadow);}
+
+/* ---------- Top bar (same brand block as birches.html) ---------- */
+.brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
+.brand-mark .leaf{color:var(--bw-accent);}
+.brand-sub{font-size:11px;color:var(--bs-secondary-color);letter-spacing:.06em;}
+.brand-link{color:inherit;text-decoration:none;}
+
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.icon-btn svg{width:18px;height:18px;}
+#themeToggle{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);}
+#themeToggle:hover,#themeToggle:focus,#themeToggle.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+#themeMenu .dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12.5px;}
+#themeMenu .theme-check{width:14px;color:var(--bw-accent);}
+#themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
+
+/* Nav page links / Records dropdown trigger — same verified color pair
+   as #themeToggle (color:body-color / border:body-color / bg:tertiary-bg),
+   not Bootstrap's default btn-outline-secondary, which has a hardcoded
+   grey that doesn't track our theme vars (see continuity notes). */
+.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;white-space:nowrap;}
+.nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+
+.navbar-toggler{border:none;padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;}
+.navbar-toggler[aria-expanded="true"]{display:inline-flex;align-items:center;justify-content:center;}
+.navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
+.navbar-toggler-icon{
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F2F6FA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+@media (max-width:767.98px){
+  .navbar-collapse{margin-top:14px;}
+  .navbar-collapse .dropdown,
+  .navbar-collapse .nav-btn,
+  .navbar-collapse .unit-select{width:100%;}
+  .navbar-collapse .nav-btn{text-align:left;}
+  .navbar-collapse .dropdown-menu{position:static;width:100%;margin-top:4px;}
+}
+/* Force the hamburger to stay collapsed for phones in landscape too.
+   navbar-expand-md's own breakpoint is a plain min-width:768px, with no
+   regard for orientation — but common phones are wider than 768px once
+   rotated to landscape (up to ~926px on the largest current models),
+   so without this override, turning a phone sideways would swap straight
+   to the full desktop nav instead of staying collapsed. Tablets/desktops
+   in landscape are comfortably wider than 926px, so they're unaffected;
+   the orientation check (not just a width cap) is what keeps a tablet in
+   PORTRAIT — which can be narrower than 926px — from being caught by this
+   too, since portrait is excluded regardless of width.
+   !important on every rule here matches Bootstrap's own use of it for
+   these exact properties — without it, source order alone wouldn't
+   reliably win against Bootstrap's :min-width:768px; .navbar-collapse
+   rule once both media queries are simultaneously in effect. */
+@media (orientation:landscape) and (max-width:926px){
+  .navbar-expand-md .navbar-collapse{display:none !important;}
+  .navbar-expand-md .navbar-collapse.show{display:flex !important;}
+  .navbar-expand-md .navbar-toggler{display:block !important;}
+}
+.unit-select{
+  background-color:var(--bs-tertiary-bg);color:var(--bs-body-color);border-color:var(--bs-body-color);
+  border-radius:999px;font-size:14px;
+}
+.unit-select option{color:#000;background-color:#fff;}
+
+/* ---------- Almanac page ---------- */
+.records-page-title{font-size:32px;font-weight:700;margin:0 0 4px;}
+.records-page-sub{color:var(--bs-secondary-color);font-size:15px;margin-bottom:18px;}
+
+.sun-moon-card{display:flex;flex-direction:column;gap:4px;}
+.sm-times-row{display:flex;justify-content:space-between;align-items:center;}
+.sm-time-item{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:13.5px;}
+.sm-time-item--right{flex-direction:row-reverse;}
+.sm-glyph{display:inline-flex;line-height:0;}
+.sm-glyph--sun-rise,.sm-glyph--sun-set{color:var(--bw-accent);}
+.sm-glyph--moon{color:var(--bs-secondary-color);}
+.sm-arc-wrap{margin:4px 0 0;}
+.sm-arc-wrap svg{width:100%;height:auto;display:block;}
+.sm-daylight{font-size:12.5px;color:var(--bs-body-color);text-align:center;margin:2px 0 6px;}
+.sm-phase-row{display:flex;align-items:center;gap:10px;justify-content:center;}
+.sm-phase-icon svg{display:block;}
+.sm-phase-name{font-weight:700;font-size:13.5px;}
+.sm-phase-pct{font-size:13px;color:var(--bs-secondary-color);}
+.sm-phase-pct b{color:var(--bs-body-color);}
+.sm-details{text-align:center;font-size:12.5px;margin-top:4px;}
+.sm-details a{color:var(--bw-danger);text-decoration:none;}
+.sm-details a:hover{text-decoration:underline;}
+/* ---------- Sky Map card ----------
+   Adapted from a real card on the user's PHP site (output of the
+   weewx-skymap-almanac extension) — deliberately NOT reusing that
+   source's own inline theme (a separate light pastel-blue palette with
+   its own night-theme toggle); it's restyled with this site's existing
+   strip-card/slabel conventions so it follows the one global theme
+   toggle already on this page instead of fighting it. The SVG itself
+   (axis/labels in particular) uses fill="currentColor"/stroke=
+   "currentColor" so at least the grid/text already follows light/dark
+   automatically; the sky-circle background and body colours are left
+   exactly as the extension renders them, since those come from real
+   backend output this page has no business overriding. */
+.skymap-card{display:flex;flex-direction:column;}
+.skymap-svg-wrap{display:flex;justify-content:center;align-items:center;margin:4px 0;}
+.skymap-svg-wrap svg{width:100%;height:auto;max-width:460px;display:block;}
+.skymap-footnote{font-size:11px;color:var(--bs-secondary-color);font-style:italic;margin-top:8px;text-align:center;}
+/* Almanac information modal */
+.almanac-col-title{font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.almanac-row{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--bs-tertiary-bg);border-radius:10px;padding:11px 16px;margin-bottom:8px;}
+.almanac-row span:first-child{color:var(--bs-secondary-color);font-size:14px;}
+.almanac-row span:last-child{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:17px;color:var(--bs-body-color);white-space:nowrap;}
+.almanac-row--phase .almanac-phase-value{display:flex;flex-direction:column;align-items:flex-end;font-family:inherit;}
+.almanac-row--phase b{font-family:'Open Sans',sans-serif;font-size:16px;font-weight:700;}
+.almanac-row--phase small{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;color:var(--bs-secondary-color);}
+.almanac-footer-note{font-size:13px;color:var(--bs-secondary-color);margin-top:4px;}
+.almanac-footer-note strong{color:var(--bs-body-color);}
+.almanac-last-updated{font-size:12.5px;color:var(--bs-secondary-color);margin-right:auto;}
+
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR — split out into navbar.html, shared with records.html,
+     charts.html, and climate.html (not index.html, which has different
+     nav content — see navbar.html's own header comment). -->
+<div w3-include-html="navbar.html"></div>
+
+<div class="container-xl">
+  <h1 class="records-page-title">Almanac</h1>
+  <p class="records-page-sub">Steeple Claydon, Buckinghamshire — sun, moon, and a live sky map.</p>
+
+  <!-- ALMANAC content (Sky Map + Sun/Moon cards, plus the details modal)
+       is its own file, celestial.html, included the same w3-include-html
+       way navbar.html is above — see celestial.html's own header
+       comment for why it's structured as a separate fragment rather
+       than written inline here. -->
+  <div w3-include-html="celestial.html"></div>
+
+</div>
+
+<footer class="text-center py-3">Re-ImaginedWX — Almanac</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ===================== Hide the current page's own nav link =====================
+   Once navbar.html has loaded, hide whichever top-level nav button
+   points at the page we're already on (e.g. no "Almanac" button while
+   actually on almanac.html) — there's nothing useful for it to do once
+   you're already there. Scoped to a.nav-btn specifically so dropdown
+   items (Charts/Records' sub-views, which all share one href base but
+   differ by ?type=) are never matched/hidden by this — only plain
+   single-destination buttons are. */
+function hideCurrentNavLink(){
+  const here = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  document.querySelectorAll('#navCollapse a.nav-btn[href]').forEach(a => {
+    const target = a.getAttribute('href').split('?')[0].split('#')[0].toLowerCase();
+    if(target && target === here) a.style.display = 'none';
+  });
+}
+
+/* ===================== HTML includes (w3-include-html) =====================
+   Two includes on this page: navbar.html (shared chrome) and
+   celestial.html (the actual Almanac content). Same implementation as
+   every other page that uses this pattern — see index.html's original
+   comment for the full rationale. callback fires once BOTH have
+   resolved (or failed), so the astro/skymap polling below — which
+   needs celestial.html's elements to exist — waits for that, not just
+   navbar.html. */
+function includeHTML(callback){
+  const elements = document.querySelectorAll('[w3-include-html]');
+  let pending = elements.length;
+  if(pending === 0){ if(callback) callback(); return; }
+  elements.forEach(el => {
+    const file = el.getAttribute('w3-include-html');
+    fetch(file)
+      .then(res => {
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        return res.text();
+      })
+      .then(html => {
+        el.innerHTML = html;
+        el.removeAttribute('w3-include-html');
+      })
+      .catch(e => {
+        console.warn('Re-ImaginedWX almanac: include failed for', file, '—', e.message);
+        el.innerHTML = '';
+      })
+      .finally(() => {
+        pending--;
+        if(pending === 0 && callback) callback();
+      });
+  });
+}
+
+/* ===================== Theme: Auto / Light / Dark =====================
+   Same split as records.html/charts.html/climate.html — the part that
+   sets data-bs-theme has no nav dependency and runs immediately below
+   (no flash-of-wrong-theme regression), while syncThemeNavUI() (the
+   part that touches #themeMenu/#themeIconSun/#themeIconMoon, all living
+   inside navbar.html) defensively no-ops until that include has landed,
+   then gets called once more from includeHTML()'s callback. */
+const root = document.documentElement;
+let themeMode = localStorage.getItem('bircheswx-theme-mode') || 'auto';
+function resolveTheme(){
+  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+function applyTheme(){
+  root.setAttribute('data-bs-theme', resolveTheme());
+  syncThemeNavUI();
+}
+function syncThemeNavUI(){
+  const sunIcon = document.getElementById('themeIconSun');
+  if(!sunIcon) return; // navbar.html hasn't loaded yet — see includeHTML() callback below
+  const resolved = resolveTheme();
+  sunIcon.style.display = resolved==='light' ? '' : 'none';
+  document.getElementById('themeIconMoon').style.display = resolved==='dark' ? '' : 'none';
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.classList.toggle('active-theme', el.dataset.themeChoice===themeMode);
+  });
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+  if(themeMode==='auto') applyTheme();
+});
+applyTheme();
+
+const ASTRO_JSON_URL = './jsondata/astronomical.json';
+const ASTRO_POLL_MS = 60*60*1000; // hourly is plenty — this data barely moves within an hour
+const SYNODIC_MONTH_DAYS = 29.530588853;
+const DIAGRAM_MIN_MINUTE = 0, DIAGRAM_MAX_MINUTE = 1440; // minutes past local midnight
+
+let astroData = null;
+
+async function fetchAstronomical(){
+  const res = await fetch(ASTRO_JSON_URL, {cache:'no-store'});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return await res.json();
+}
+async function pollAstronomical(){
+  try{
+    astroData = await fetchAstronomical();
+  }catch(e){
+    console.warn('BirchesWX: astronomical data poll failed —', e.message);
+    // Leave astroData as whatever it last was rather than clearing it on a blip.
+  }
+  renderSunMoonCard();
+}
+
+/* ===================== Sky Map card =====================
+   Adapted from a real card on the user's PHP site — a circular alt-az
+   sky chart (planets, Moon, GPS/weather satellites) rendered server-side
+   by the weewx-skymap-almanac extension via a $almanac.skymap Cheetah
+   tag (see skymap.svg.tmpl). CONFIRMED LIVE as of this session — the
+   './jsondata/skymap.svg' path below was a best-guess placeholder when
+   this card was first built, matching this project's own convention for
+   every other live file; the user has since wired up skymap.svg.tmpl
+   and confirmed it's actually producing real output at that exact path.
+
+   Polls every 5 minutes by default — satellite positions move fast
+   enough that the hourly cadence used for the rest of the almanac data
+   (sunrise/sunset etc., which barely change within an hour) didn't make
+   sense here. Tighten SKYMAP_POLL_MS further if the underlying
+   skymap.svg.tmpl regenerates more often than every 5 minutes in the
+   user's actual report cycle — this is just a sensible default, not a
+   measured value. */
+const SKYMAP_SVG_URL = './jsondata/skymap.svg';
+const SKYMAP_POLL_MS = 5*60*1000;
+
+async function pollSkymap(){
+  const wrap = document.getElementById('skymapSvgWrap');
+  if(!wrap) return; // celestial.html include hasn't landed yet — see includeHTML() gating in the bootstrap section
+  try{
+    // {cache:'no-store'} only stops the BROWSER's own HTTP cache from
+    // serving a stale copy — it has no effect on a CDN/edge cache (e.g.
+    // Cloudflare, if this site's DNS is proxied through it) sitting
+    // between the browser and the Pi, which can keep serving an old
+    // cached .svg even though the file on disk is genuinely up to date.
+    // A cache-busting query string defeats that too, since every poll
+    // becomes a literally unique URL no cache layer has seen before —
+    // works regardless of which layer was actually the culprit, without
+    // needing a server-side Cache Rule change.
+    const res = await fetch(SKYMAP_SVG_URL + '?_=' + Date.now(), {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const svgText = await res.text();
+    if(!svgText.includes('<svg')) throw new Error('Response doesn\u2019t look like an SVG');
+    wrap.innerHTML = svgText;
+    const src = document.getElementById('skymapSrc');
+    if(src) src.textContent = 'Live';
+    const note = document.getElementById('skymapFootnote');
+    if(note) note.textContent = 'Live output from the weewx-skymap-almanac extension.';
+  }catch(e){
+    // Shouldn't happen now the path's confirmed, but the same
+    // graceful-fallback behaviour stays in place regardless — a blip
+    // here leaves the last successfully-fetched SVG (or, if this is
+    // the very first poll on a fresh page load, the embedded snapshot)
+    // in place rather than clearing the card.
+    console.warn('BirchesWX: sky map poll failed —', e.message);
+  }
+}
+/* "minute,alt|minute,alt|..." -> [{minute, alt}, ...] */
+function parseTrackPoints(trackStr){
+  if(!trackStr) return [];
+  return (trackStr.split('|')).map(pair => {
+    const parts = pair.split(',');
+    const minute = parseFloat(parts[0]), alt = parseFloat(parts[1]);
+    return (isNaN(minute) || isNaN(alt)) ? null : {minute, alt};
+  }).filter(Boolean);
+}
+/* Wraps a minute-of-day value by offset into [0,1440) — port of the
+   backend's _wrap_diagram_x. JS's % can return negative for negative
+   operands (unlike Python's), so that's corrected explicitly. */
+function wrapDiagramMinute(minute, offset){
+  const span = DIAGRAM_MAX_MINUTE - DIAGRAM_MIN_MINUTE;
+  if(span <= 0) return minute;
+  let v = (minute - DIAGRAM_MIN_MINUTE + (offset||0)) % span;
+  if(v < 0) v += span;
+  return v + DIAGRAM_MIN_MINUTE;
+}
+/* Catmull-Rom -> cubic Bezier smoothing — direct port of
+   _build_track_path_from_projected_points, operating on already-mapped
+   {x,y} pixel points instead of Python tuples. */
+function buildSmoothPath(points){
+  if(points.length < 2) return '';
+  if(points.length === 2){
+    return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)} L ${points[1].x.toFixed(1)} ${points[1].y.toFixed(1)}`;
+  }
+  const segs = [`M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`];
+  for(let i=0;i<points.length-1;i++){
+    const p1 = points[i], p2 = points[i+1];
+    const p0 = i>0 ? points[i-1] : p1;
+    const p3 = (i+2<points.length) ? points[i+2] : p2;
+    const c1x = p1.x + (p2.x-p0.x)/6, c1y = p1.y + (p2.y-p0.y)/6;
+    const c2x = p2.x - (p3.x-p1.x)/6, c2y = p2.y - (p3.y-p1.y)/6;
+    segs.push(`C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`);
+  }
+  return segs.join(' ');
+}
+
+/* tiltDeg is the Moon's real bright-limb position angle as seen by this
+   observer (measured from celestial north, increasing through east,
+   already corrected for parallactic angle server-side — see
+   astronomical.json.tmpl for the actual Meeus/parallactic-angle math).
+   This maps to an on-screen direction via the standard "as the eye
+   sees it" sky-image convention: when north is drawn pointing up, east
+   appears on the LEFT (the well-known map-vs-sky inversion) — so
+   PA=0°(N) points straight up on screen, PA=90°(E) points left, and so
+   on, rotating clockwise-in-PA = clockwise-in-screen-angle once you
+   account for SVG's y-down coordinate system. That gives
+   screen_angle = -90° - PA. The light-circle offset is built directly
+   from that direction instead of a horizontal dx plus a separate
+   rotate() — a cleaner, more literal expression of "the illuminated
+   side points this way" rather than two separate fudge factors. */
+function moonPhaseIconSvg(illumPct, waxing, size, tiltDeg){
+  const r = size/2 - 2, cx = size/2, cy = size/2;
+  const k = illumPct/100;
+  const magnitude = 2*r*(1-k);
+  // Fall back to the simple horizontal waxing/waning convention (right
+  // for waxing, left for waning — correct for a Northern Hemisphere
+  // observer) if a real tilt isn't available.
+  const screenAngleDeg = (tiltDeg!=null) ? (-90 - tiltDeg) : (waxing ? 0 : 180);
+  const screenAngleRad = screenAngleDeg * Math.PI/180;
+  const dx = magnitude * Math.cos(screenAngleRad);
+  const dy = magnitude * Math.sin(screenAngleRad);
+  // Fixed, theme-independent colors — the Moon's own lit/shadow surface
+  // shouldn't flip just because the site is in dark mode. (It used to
+  // pull from --bs-card-bg/--bs-secondary-color, which are only
+  // correctly light/dark in the light theme; in dark theme --bs-card-bg
+  // is near-black and --bs-secondary-color is a lighter grey, silently
+  // swapping which color meant "illuminated" vs "shadow".)
+  const light = '#F5F6F7';
+  const dark = '#6B7178';
+  const border = '#4A4F54';
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    <defs><clipPath id="moonPhaseClip"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="${dark}" stroke="${border}" stroke-width="1.5"/>
+    <g clip-path="url(#moonPhaseClip)"><circle cx="${(cx+dx).toFixed(1)}" cy="${(cy+dy).toFixed(1)}" r="${r}" fill="${light}"/></g>
+  </svg>`;
+}
+
+/* x-axis: minute-of-day, wrapped by each body's own x_offset so its own
+   transit lands at the diagram's center (matching the backend's
+   "transit" centering mode) — y-axis: real altitude above the horizon
+   baseline, sampled from the actual track rather than approximated. */
+function buildSunMoonArcSvg(sunTrackStr, sunXOffset, sunAltNow, moonTrackStr, moonXOffset, moonAltNow, currentMinute){
+  const W = 300, H = 80, baseline = 46;
+  const VERTICAL_SCALE = 0.42; // px per degree — tuned for this card's own viewBox, independent of the backend's own pixel space
+  const cs = getComputedStyle(document.documentElement);
+  const sunColor = cs.getPropertyValue('--bw-accent').trim() || '#E8A33D';
+  const moonColor = cs.getPropertyValue('--bs-secondary-color').trim() || '#8c9a95';
+  const lineColor = cs.getPropertyValue('--bw-instrument-border').trim() || '#444';
+  const zenithColor = cs.getPropertyValue('--bw-good').trim() || '#3F8F63';
+
+  function mapX(minute){ return (minute/DIAGRAM_MAX_MINUTE)*W; }
+  function mapY(alt){ return baseline - Math.max(-90, Math.min(90, alt))*VERTICAL_SCALE; }
+
+  function buildCurve(trackStr, offset){
+    const raw = parseTrackPoints(trackStr);
+    if(raw.length < 2) return '';
+    const projected = raw.map(p => ({
+      x: mapX(wrapDiagramMinute(p.minute, offset)),
+      y: mapY(p.alt),
+    }));
+    projected.sort((a,b) => a.x-b.x); // draw left-to-right in wrapped coordinates
+    return buildSmoothPath(projected);
+  }
+
+  const sunPath = buildCurve(sunTrackStr, sunXOffset);
+  const moonPath = buildCurve(moonTrackStr, moonXOffset);
+  const sunMarkerY = sunAltNow!=null ? mapY(sunAltNow) : null;
+  const moonMarkerY = moonAltNow!=null ? mapY(moonAltNow) : null;
+  const sunMarkerX = currentMinute!=null ? mapX(wrapDiagramMinute(currentMinute, sunXOffset)) : null;
+  const moonMarkerX = currentMinute!=null ? mapX(wrapDiagramMinute(currentMinute, moonXOffset)) : null;
+  const zenithX = W/2; // both curves are independently centered here by construction (see module comment)
+
+  return `
+    <line x1="0" y1="${baseline}" x2="${W}" y2="${baseline}" stroke="${lineColor}" stroke-width="1.5"/>
+    <text x="4" y="${baseline-5}" font-size="9" fill="${lineColor}">Horizon</text>
+    <line x1="${zenithX}" y1="4" x2="${zenithX}" y2="${H-2}" stroke="${zenithColor}" stroke-width="1.2" opacity=".55"/>
+    <text x="${zenithX}" y="11" font-size="9" fill="${zenithColor}" text-anchor="middle">Zenith</text>
+    ${moonPath ? `<path d="${moonPath}" fill="none" stroke="${moonColor}" stroke-width="2" stroke-dasharray="4 4" opacity=".8"/>` : ''}
+    ${sunPath ? `<path d="${sunPath}" fill="none" stroke="${sunColor}" stroke-width="2.5"/>` : ''}
+    ${(moonMarkerY!=null && moonMarkerX!=null) ? `<circle cx="${moonMarkerX.toFixed(1)}" cy="${moonMarkerY.toFixed(1)}" r="5" fill="${moonColor}"/>` : ''}
+    ${(sunMarkerY!=null && sunMarkerX!=null) ? `<circle cx="${sunMarkerX.toFixed(1)}" cy="${sunMarkerY.toFixed(1)}" r="5" fill="${sunColor}"/>` : ''}
+  `;
+}
+
+/* Updates the whole sun/moon card from astroData. Safe to call before
+   the first successful poll (astroData still null) — it just leaves
+   the markup's static placeholder text in place rather than throwing. */
+function renderSunMoonCard(){
+  if(!astroData) return;
+  // Defensive: celestial.html (the Almanac include) failing to load is the
+  // one realistic way these elements wouldn't exist by the time this
+  // runs — includeHTML()'s callback still fires on a failed include (so
+  // one missing file can't hang every other poll on the page), so this
+  // has to handle that case itself rather than assume the include always
+  // succeeded.
+  if(!document.getElementById('sunRiseTime')) return;
+  const d = astroData;
+  const sun = d.sun || {};
+  const moon = d.moon || {};
+
+  document.getElementById('sunRiseTime').textContent = sun.rise || '--:--';
+  document.getElementById('sunSetTime').textContent = sun.set || '--:--';
+  document.getElementById('moonRiseTime').textContent = moon.rise || '--:--';
+  document.getElementById('moonSetTime').textContent = moon.set || '--:--';
+
+  document.getElementById('sunMoonArcSvg').innerHTML = buildSunMoonArcSvg(
+    sun.track_points, sun.x_offset, sun.alt,
+    moon.track_points, moon.x_offset, moon.alt,
+    d.current_minute_of_day
+  );
+
+  if(d.daylight_delta_seconds!=null){
+    const absSec = Math.round(Math.abs(d.daylight_delta_seconds));
+    const m = Math.floor(absSec/60), s = absSec%60;
+    document.getElementById('daylightDelta').textContent = `Daylight: ${m}m ${s}s ${d.daylight_delta_seconds>=0?'more':'less'} than yesterday`;
+  } else if(d.daylight_today_seconds!=null){
+    const h = Math.floor(d.daylight_today_seconds/3600), mi = Math.round((d.daylight_today_seconds%3600)/60);
+    document.getElementById('daylightDelta').textContent = `Daylight: ${h}h ${mi}m`;
+  } else {
+    document.getElementById('daylightDelta').textContent = 'Daylight: --';
+  }
+
+  const illumPct = moon.fullness_pct!=null ? Math.round(moon.fullness_pct) : 50;
+  const waxing = moon.age_days!=null ? (moon.age_days/SYNODIC_MONTH_DAYS) < 0.5 : true;
+  document.getElementById('moonPhaseIconWrap').innerHTML = moonPhaseIconSvg(illumPct, waxing, 34, moon.tilt_deg);
+  document.getElementById('moonPhaseName').textContent = moon.phase_name ? moon.phase_name.replace(/\b\w/g, c=>c.toUpperCase()) : '--';
+  document.getElementById('moonPhasePct').textContent = illumPct + '%';
+
+  populateAlmanacModal(d, sun, moon, illumPct);
+}
+
+/* "DD/MM/YY HH:MM:SS" in the station's own timezone (Europe/London,
+   BST-aware) — explicit, not the viewer's own browser timezone, since
+   these are events at the STATION's location, not wherever the page
+   happens to be viewed from. */
+function fmtAlmanacDateTime(epoch){
+  if(epoch==null) return '--';
+  const parts = {};
+  new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London', hourCycle:'h23',
+    day:'2-digit', month:'2-digit', year:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit',
+  }).formatToParts(new Date(epoch*1000)).forEach(p => { if(p.type!=='literal') parts[p.type]=p.value; });
+  return `${parts.day}/${parts.month}/${parts.year} ${parts.hour}:${parts.minute}:${parts.second}`;
+}
+function fmtAlmanacDuration(seconds){
+  if(seconds==null) return '--';
+  const h = Math.floor(seconds/3600), m = Math.floor((seconds%3600)/60), s = Math.round(seconds%60);
+  return `${h}h ${m}m ${s}s`;
+}
+function fmtDeg(v){ return v!=null ? v.toFixed(1)+'°' : '--'; }
+
+function populateAlmanacModal(d, sun, moon, illumPct){
+  document.getElementById('amSunCivilStart').textContent = d.civil_twilight_begin || '--';
+  document.getElementById('amSunRise').textContent = sun.rise || '--';
+  document.getElementById('amSunTransit').textContent = sun.transit || '--';
+  document.getElementById('amSunSet').textContent = sun.set || '--';
+  document.getElementById('amSunCivilEnd').textContent = d.civil_twilight_end || '--';
+  document.getElementById('amSunAz').textContent = fmtDeg(sun.az);
+  document.getElementById('amSunAlt').textContent = fmtDeg(sun.alt);
+  document.getElementById('amSunRa').textContent = fmtDeg(sun.ra);
+  document.getElementById('amSunDec').textContent = fmtDeg(sun.dec);
+  document.getElementById('amEquinox').textContent = fmtAlmanacDateTime(d.next_equinox_epoch);
+  document.getElementById('amSolstice').textContent = fmtAlmanacDateTime(d.next_solstice_epoch);
+  document.getElementById('amDaylight').textContent = fmtAlmanacDuration(d.daylight_today_seconds);
+
+  document.getElementById('amMoonRise').textContent = moon.rise || '--';
+  document.getElementById('amMoonTransit').textContent = moon.transit || '--';
+  document.getElementById('amMoonSet').textContent = moon.set || '--';
+  document.getElementById('amMoonAz').textContent = fmtDeg(moon.az);
+  document.getElementById('amMoonAlt').textContent = fmtDeg(moon.alt);
+  document.getElementById('amMoonRa').textContent = fmtDeg(moon.ra);
+  document.getElementById('amMoonDec').textContent = fmtDeg(moon.dec);
+  document.getElementById('amFullMoon').textContent = fmtAlmanacDateTime(d.next_full_moon_epoch);
+  document.getElementById('amNewMoon').textContent = fmtAlmanacDateTime(d.next_new_moon_epoch);
+  document.getElementById('amMoonAge').textContent = moon.age_days!=null ? moon.age_days.toFixed(1)+' days' : '--';
+  document.getElementById('amPhaseName').textContent = moon.phase_name ? moon.phase_name.replace(/\b\w/g, c=>c.toUpperCase()) : '--';
+  document.getElementById('amPhasePct').textContent = illumPct + '% full';
+
+  document.getElementById('amDataSource').textContent = d.data_source || '--';
+  if(d.generated_at_epoch!=null){
+    const parts = {};
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/London', hourCycle:'h23',
+      day:'numeric', month:'long', year:'numeric',
+      hour:'2-digit', minute:'2-digit', second:'2-digit',
+    }).formatToParts(new Date(d.generated_at_epoch*1000)).forEach(p => { if(p.type!=='literal') parts[p.type]=p.value; });
+    document.getElementById('amLastUpdated').textContent = `Last Updated ${parts.day} ${parts.month} ${parts.year}, ${parts.hour}:${parts.minute}:${parts.second}`;
+  } else {
+    document.getElementById('amLastUpdated').textContent = '';
+  }
+}
+
+
+/* ===================== Bootstrap ===================== */
+// navbar.html and celestial.html both have to be in the DOM before
+// #unitSystem/#themeMenu/#skymapSvgWrap/etc exist — see includeHTML()
+// above. (This page doesn't wire up #unitSystem at all: nothing here
+// renders a temp/wind/rain/pressure figure that a unit choice would
+// affect, so the shared navbar's selector is present for nav-layout
+// consistency with the other pages but is simply inert here, the same
+// way e.g. "Beaufort wind" is inert on pages with no wind figure.)
+includeHTML(() => {
+  hideCurrentNavLink();
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      themeMode = el.dataset.themeChoice;
+      localStorage.setItem('bircheswx-theme-mode', themeMode);
+      applyTheme();
+    });
+  });
+  syncThemeNavUI();
+
+  pollAstronomical();
+  setInterval(pollAstronomical, ASTRO_POLL_MS);
+  pollSkymap();
+  setInterval(pollSkymap, SKYMAP_POLL_MS);
+});
+</script>
+</body>
+</html>

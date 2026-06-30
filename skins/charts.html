@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>steepleclaydonweather.uk</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ===================== Birch palette — kept in sync by hand with
+   birches.html / records.html. Third copy of this block; if a fourth
+   page ever needs it, this should really move to a shared style.css. */
+:root,
+[data-bs-theme="light"]{
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-lime:#C9DA1E;
+  --bw-lime-soft:#2E331A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#2C5478;
+  --bw-instrument-headspace:#495E74;
+  --bw-instrument-border:#E8EEF5;
+  --bw-radius:18px;
+  --bw-radius-sm:10px;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#2E5C84;
+  --bs-body-color:#F2F6FA;
+  --bs-secondary-color:#AFC8DE;
+  --bs-tertiary-bg:#1B3A57;
+  --bs-secondary-bg:#234870;
+  --bs-border-color:#2C5478;
+  --bs-border-color-translucent:#2C5478;
+  --bs-card-bg:#16314D;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+  --bs-warning-rgb:232,163,61;
+  --bs-font-sans-serif:'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-bs-theme="dark"]{
+  --bw-instrument-headspace:#222A2E;
+  --bw-instrument-border:#343E43;
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#343E43;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#14181B;
+  --bs-body-color:#EAEFE9;
+  --bs-secondary-color:#8C9A95;
+  --bs-tertiary-bg:#222A2E;
+  --bs-secondary-bg:#2A3338;
+  --bs-border-color:#343E43;
+  --bs-border-color-translucent:#343E43;
+  --bs-card-bg:#1B2125;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+}
+
+body{
+  font-family:var(--bs-font-sans-serif);
+  padding-bottom:48px;
+  transition:background-color .25s ease, color .25s ease;
+}
+.font-mono{font-family:'JetBrains Mono','Courier New',monospace;}
+.card{border-radius:var(--bw-radius-sm); box-shadow:var(--bw-shadow);}
+
+/* ---------- Top bar ---------- */
+.brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
+.brand-mark .leaf{color:var(--bw-accent);}
+.brand-sub{font-size:11px;color:var(--bs-secondary-color);letter-spacing:.06em;}
+.brand-link{color:inherit;text-decoration:none;}
+
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.icon-btn svg{width:18px;height:18px;}
+#themeToggle{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);}
+#themeToggle:hover,#themeToggle:focus,#themeToggle.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+#themeMenu .dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12.5px;}
+#themeMenu .theme-check{width:14px;color:var(--bw-accent);}
+#themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
+
+.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;white-space:nowrap;}
+.nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+
+.navbar-toggler{border:none;padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;}
+.navbar-toggler[aria-expanded="true"]{display:inline-flex;align-items:center;justify-content:center;}
+.navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
+.navbar-toggler-icon{
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F2F6FA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+@media (max-width:767.98px){
+  .navbar-collapse{margin-top:14px;}
+  .navbar-collapse .dropdown,
+  .navbar-collapse .nav-btn,
+  .navbar-collapse .unit-select{width:100%;}
+  .navbar-collapse .nav-btn{text-align:left;}
+  .navbar-collapse .dropdown-menu{position:static;width:100%;margin-top:4px;}
+}
+/* Force the hamburger to stay collapsed for phones in landscape too — see
+   index.html's copy of this same rule for the full reasoning. Present in
+   index.html/records.html/climate.html already; this page was missing it
+   entirely (one more symptom of never having been brought into the
+   navbar.html consolidation — see the include comment above). */
+@media (orientation:landscape) and (max-width:926px){
+  .navbar-expand-md .navbar-collapse{display:none !important;}
+  .navbar-expand-md .navbar-collapse.show{display:flex !important;}
+  .navbar-expand-md .navbar-toggler{display:block !important;}
+}
+.unit-select{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.03em;
+  color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bs-body-color);
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23E8EEF5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+.unit-select:focus{color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bw-accent);box-shadow:0 0 0 .25rem rgba(232,163,61,.25);}
+.unit-select option{color:#000;background-color:#fff;}
+
+/* ---------- Charts page ---------- */
+.records-page-title{font-size:32px;font-weight:700;margin:0 0 4px;}
+.records-page-sub{color:var(--bs-secondary-color);font-size:15px;margin-bottom:18px;}
+
+/* Category tabs — identical styling to records.html's so the two pages
+   feel like the same product. */
+.records-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.records-tab{
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;
+  padding:9px 18px;border-radius:999px;border:1px solid var(--bs-border-color);
+  background-color:var(--bs-tertiary-bg);color:var(--bs-body-color);
+  cursor:pointer;transition:.15s;
+}
+.records-tab:hover{border-color:var(--bw-accent);}
+.records-tab.active{background-color:var(--bw-accent);color:#1B1407;border-color:var(--bw-accent);}
+
+/* Time-frame buttons (Day/Week/Month/Year/Historical) — same pill
+   language, smaller, sitting inside the chart card's own toolbar row. */
+.chart-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.chart-timeframes{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.chart-tf-btn{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;
+  padding:7px 14px;border-radius:999px;border:1px solid var(--bs-border-color);
+  background-color:var(--bs-tertiary-bg);color:var(--bs-body-color);
+  cursor:pointer;transition:.15s;
+}
+.chart-tf-btn:hover{border-color:var(--bw-accent);}
+.chart-tf-btn.active{background-color:var(--bw-accent);color:#1B1407;border-color:var(--bw-accent);}
+.chart-hist-select{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;
+  background-color:var(--bs-tertiary-bg);color:var(--bs-body-color);border:1px solid var(--bs-border-color);
+  border-radius:999px;padding:7px 14px;
+}
+.chart-hist-select option{color:#000;background-color:#fff;}
+.chart-hist-select.active{border-color:var(--bw-accent);background-color:var(--bw-accent-soft);color:var(--bw-accent);}
+.chart-data-info{font-size:11.5px;color:var(--bs-secondary-color);font-style:italic;}
+
+.chart-container{width:100%;height:420px;}
+.chart-category-note{font-size:12.5px;color:var(--bs-secondary-color);margin:10px 0 0;font-style:italic;}
+
+/* Records-at-bottom panel — identical structure/classes to records.html. */
+.records-periods-row{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:14px;
+}
+.records-period-card{
+  background-color:var(--bs-tertiary-bg);border:1px solid var(--bw-instrument-border,var(--bs-border-color));
+  border-radius:12px;padding:16px 12px;text-align:center;
+}
+.records-period-label{
+  font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--bs-secondary-color);margin-bottom:12px;padding-bottom:8px;
+  border-bottom:1px solid var(--bs-border-color);
+}
+.records-grid{display:flex;flex-direction:column;gap:16px;}
+.records-label{font-size:12.5px;color:var(--bs-secondary-color);margin-bottom:3px;}
+.records-value{font-size:20px;font-weight:600;font-family:'JetBrains Mono',monospace;line-height:1.15;}
+.records-value-date{font-size:11px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+.records-section-title{font-size:20px;font-weight:700;margin:28px 0 14px;}
+
+@media (max-width:900px){
+  .records-periods-row{grid-template-columns:repeat(3,1fr);}
+}
+@media (max-width:600px){
+  .records-periods-row{grid-template-columns:repeat(2,1fr);}
+  .chart-container{height:340px;}
+}
+@media (max-width:420px){
+  .records-periods-row{grid-template-columns:1fr;}
+}
+
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+
+/* Pollen color swatches for legend */
+.pollen-label{display:inline-flex;align-items:center;gap:6px;}
+.pollen-dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
+
+/* Pollen severity colors in records */
+.pollen-very-high{color:#D8001D;}
+.pollen-high{color:#F85900;}
+.pollen-moderate{color:#F7E400;}
+.pollen-low{color:#1F8C3F;}
+
+/* Visibility legend colors */
+.vis-excellent{color:#5BBB8A;}
+.vis-good{color:#6FB6DD;}
+.vis-moderate{color:#D6BE4E;}
+.vis-poor{color:#E36B57;}
+.vis-very-poor{color:#D8001D;}
+
+/* UV Index color scale for the chart */
+.uv-0{color:#7F7F7F;}
+.uv-1{color:#1F8C3F;}
+.uv-2{color:#1F8C3F;}
+.uv-3{color:#F7E400;}
+.uv-4{color:#F7E400;}
+.uv-5{color:#F7E400;}
+.uv-6{color:#F85900;}
+.uv-7{color:#F85900;}
+.uv-8{color:#D8001D;}
+.uv-9{color:#D8001D;}
+.uv-10{color:#D8001D;}
+.uv-11{color:#6B49C8;}
+
+/* AQI color scale */
+.aqi-good{color:#5BBB8A;}
+.aqi-moderate{color:#F7E400;}
+.aqi-unhealthy-sensitive{color:#F85900;}
+.aqi-unhealthy{color:#D8001D;}
+
+/* Lightning danger colors */
+.ltg-very-close{color:#D8001D;}
+.ltg-close{color:#E36B57;}
+.ltg-moderate{color:#F7E400;}
+.ltg-far{color:#6FB6DD;}
+
+/* Gas color swatches */
+.gas-co{color:#6FB6DD;}
+.gas-co2{color:#8C9A95;}
+.gas-nh3{color:#D6BE4E;}
+.gas-no2{color:#E36B57;}
+.gas-o3{color:#5BBB8A;}
+.gas-so2{color:#C9DA1E;}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR — was its own stale, hand-copied block here (still branded
+     "Re-ImaginedWX", brand-link still pointing at the long-renamed
+     birches.html, missing the Almanac/Global Forecasts links the other
+     pages have, and dropdown-items still carrying the data-cat
+     attributes the navbar.html consolidation confirmed nothing reads) —
+     this page had apparently never been switched over to the shared
+     navbar.html include the way records.html/climate.html were. Doing
+     that switch now instead of hand-patching the stale copy again,
+     since hand-patching is exactly how it drifted in the first place.
+     See navbar.html's own header comment for the full consolidation
+     history. -->
+<div w3-include-html="navbar.html"></div>
+
+<div class="container-xl">
+  <h1 class="records-page-title">Weather Charts</h1>
+  <p class="records-page-sub">Steeple Claydon, Buckinghamshire — live 24-hour detail plus trailing week / month / year / historical-year views.</p>
+
+  <div class="records-tabs" id="recordsTabs">
+    <button class="records-tab" data-cat="temperature">Temperature</button>
+    <button class="records-tab" data-cat="wind">Wind &amp; Gust</button>
+    <button class="records-tab" data-cat="rain">Rain &amp; Rain Rate</button>
+    <button class="records-tab" data-cat="barometer">Barometer</button>
+    <button class="records-tab" data-cat="solaruv">Solar &amp; UV</button>
+    <button class="records-tab" data-cat="cloud">Cloud &amp; Visibility</button>
+    <button class="records-tab" data-cat="lightning">Lightning</button>
+    <button class="records-tab" data-cat="pollen">Pollen</button>
+    <button class="records-tab" data-cat="airquality">Air Quality</button>
+    <button class="records-tab" data-cat="gases">Greenhouse Gases</button>
+  </div>
+
+  <div class="card p-4 mb-4">
+    <div class="chart-toolbar">
+      <div class="chart-timeframes" id="chartTimeframes">
+        <button class="chart-tf-btn" data-tf="day">Day</button>
+        <button class="chart-tf-btn" data-tf="week">Week</button>
+        <button class="chart-tf-btn" data-tf="month">Month</button>
+        <button class="chart-tf-btn" data-tf="year">Year</button>
+        <select class="chart-hist-select" id="chartHistYear" title="Historical year"></select>
+      </div>
+      <span class="chart-data-info" id="chartDataInfo"></span>
+    </div>
+    <div class="chart-container" id="chartContainer"></div>
+    <div class="chart-category-note" id="chartCategoryNote"></div>
+  </div>
+
+  <h2 class="records-section-title">Records</h2>
+  <div class="card p-4 mb-4">
+    <div class="records-periods-row" id="recordsPeriodsRow"><!-- populated by renderRecordsPanel() --></div>
+  </div>
+
+  <footer class="text-center py-3">Re-ImaginedWX — Charts</footer>
+</div>
+
+<script>
+/* ===================== Unit conversion + formatting (mirrors birches.html / records.html) ===================== */
+const C2F = c => c*9/5+32;
+const ms2mph = ms => ms*2.23694;
+const ms2kmh = ms => ms*3.6;
+const ms2kt  = ms => ms*1.94384;
+const hpa2inhg = hpa => hpa*0.0295301;
+const hpa2mmhg = hpa => hpa*0.750062;
+const hpa2kpa  = hpa => hpa/10;
+const mm2in = mm => mm*0.0393701;
+const km2mi = km => km*0.621371;
+const km2nm = km => km*0.539957;
+
+function beaufort(ms){
+  const scale=[
+    [0.5,0,"Calm"],[1.5,1,"Light air"],[3.3,2,"Light breeze"],[5.5,3,"Gentle breeze"],
+    [7.9,4,"Moderate breeze"],[10.7,5,"Fresh breeze"],[13.8,6,"Strong breeze"],
+    [17.1,7,"Near gale"],[20.7,8,"Gale"],[24.4,9,"Strong gale"],[28.4,10,"Storm"],
+    [32.6,11,"Violent storm"],[999,12,"Hurricane"]
+  ];
+  for(const [max,f,label] of scale){ if(ms<max) return {force:f,label}; }
+  return {force:12,label:"Hurricane"};
+}
+
+const SYSTEMS = {
+  uk:       {temp:'C', wind:'mph', pressure:'hpa', rain:'mm', dist:'km', conc:'µg/m³'},
+  us:       {temp:'F', wind:'mph', pressure:'inhg', rain:'in', dist:'mi', conc:'µg/m³'},
+  metric:   {temp:'C', wind:'kmh', pressure:'hpa', rain:'mm', dist:'km', conc:'µg/m³'},
+  scandi:   {temp:'C', wind:'ms',  pressure:'hpa', rain:'mm', dist:'km', conc:'µg/m³'},
+  canada:   {temp:'C', wind:'kmh', pressure:'kpa', rain:'mm', dist:'km', conc:'µg/m³'},
+  aviation: {temp:'C', wind:'kt',  pressure:'hpa', rain:'mm', dist:'nm', conc:'µg/m³'},
+  beaufort: {temp:'C', wind:'bf',  pressure:'hpa', rain:'mm', dist:'km', conc:'µg/m³'},
+};
+
+/* String formatters — used by the records panel at the bottom. */
+function fmtTemp(c, unit){ return unit==='F' ? Math.round(C2F(c))+'°F' : Math.round(c)+'°C'; }
+function fmtWind(ms, unit){
+  switch(unit){
+    case 'mph': return Math.round(ms2mph(ms))+' mph';
+    case 'kmh': return Math.round(ms2kmh(ms))+' km/h';
+    case 'kt':  return Math.round(ms2kt(ms))+' kt';
+    case 'ms':  return (Math.round(ms*10)/10)+' m/s';
+    case 'bf': { const b=beaufort(ms); return 'F'+b.force+' · '+b.label; }
+    default: return Math.round(ms)+' m/s';
+  }
+}
+function fmtPressure(hpa, unit){
+  switch(unit){
+    case 'inhg': return (Math.round(hpa2inhg(hpa)*100)/100)+' inHg';
+    case 'mmhg': return Math.round(hpa2mmhg(hpa))+' mmHg';
+    case 'kpa':  return (Math.round(hpa2kpa(hpa)*10)/10)+' kPa';
+    default: return Math.round(hpa)+' hPa';
+  }
+}
+function fmtRain(mm, unit){ return unit==='in' ? (Math.round(mm2in(mm)*100)/100)+' in' : (Math.round(mm*10)/10)+' mm'; }
+function fmtDist(km, unit){
+  switch(unit){
+    case 'mi': return (Math.round(km2mi(km)*10)/10)+' mi';
+    case 'nm': return (Math.round(km2nm(km)*10)/10)+' nm';
+    default: return (Math.round(km*10)/10)+' km';
+  }
+}
+function fmtPollen(v){ return Math.round(v); }
+function fmtConc(v, unit){ return Math.round(v)+' '+unit; }
+function fmtLightningCount(v){ return v >= 1 ? Math.round(v)+' strikes' : 'None'; }
+function fmtCloudPercent(v){ return Math.round(v)+'%'; }
+
+/* Numeric converters — used to feed chart series (ECharts needs raw
+   numbers, not formatted strings). */
+function convTemp(c, unit){ return unit==='F' ? C2F(c) : c; }
+function convWind(ms, unit){
+  switch(unit){
+    case 'mph': return ms2mph(ms);
+    case 'kmh': return ms2kmh(ms);
+    case 'kt':  return ms2kt(ms);
+    case 'bf':  return beaufort(ms).force;
+    default:    return ms;
+  }
+}
+function convPressure(hpa, unit){
+  switch(unit){
+    case 'inhg': return hpa2inhg(hpa);
+    case 'mmhg': return hpa2mmhg(hpa);
+    case 'kpa':  return hpa2kpa(hpa);
+    default:     return hpa;
+  }
+}
+function convRain(mm, unit){ return unit==='in' ? mm2in(mm) : mm; }
+function convDist(km, unit){
+  switch(unit){
+    case 'mi': return km2mi(km);
+    case 'nm': return km2nm(km);
+    default: return km;
+  }
+}
+function convPollen(v, sys){ return v; }
+function convConc(v, sys){ return v; }
+
+function tempUnitLabel(sys){ return sys.temp==='F' ? '°F' : '°C'; }
+function windUnitLabel(sys){ return {mph:'mph', kmh:'km/h', kt:'kt', ms:'m/s', bf:'Bft'}[sys.wind] || sys.wind; }
+function pressureUnitLabel(sys){ return {inhg:'inHg', mmhg:'mmHg', kpa:'kPa', hpa:'hPa'}[sys.pressure] || sys.pressure; }
+function rainUnitLabel(sys){ return sys.rain==='in' ? 'in' : 'mm'; }
+function distUnitLabel(sys){ return {mi:'mi', nm:'nm', km:'km'}[sys.dist] || sys.dist; }
+function pollenUnitLabel(){ return 'grains/m³'; }
+function concUnitLabel(sys){ return sys.conc || 'µg/m³'; }
+
+let currentSystem = 'uk';
+
+/* ===================== Shared data: fetch + period-slicing =====================
+   Same charts.json fetch and trailing-window slicing technique as
+   records.html (itself ported from the user's real chartTemperature.php).
+   See records.html for the long-form rationale comment — not repeated
+   here to keep this file shorter; the logic is identical. */
+const CHARTS_JSON_URL = './charts/json/charts.json';
+const CHARTS_POLL_MS = 60*60*1000;
+let dataSeries = null;
+
+function dataSlice(seriesArr, days){
+  if(!Array.isArray(seriesArr)) return [];
+  const valid = seriesArr.filter(pt => pt && pt[1] !== null && pt[1] !== undefined);
+  valid.sort((a,b)=>a[0]-b[0]);
+  const n = isFinite(days) ? Math.min(days, valid.length) : valid.length;
+  return n > 0 ? valid.slice(valid.length - n) : [];
+}
+function dataAggregate(slice, agg){
+  if(!slice.length) return {value:null, date:null};
+  if(agg === 'max'){ let best=slice[0]; for(const pt of slice) if(pt[1] > best[1]) best=pt; return {value:best[1], date:best[0]}; }
+  if(agg === 'min'){ let best=slice[0]; for(const pt of slice) if(pt[1] < best[1]) best=pt; return {value:best[1], date:best[0]}; }
+  if(agg === 'sum'){ return {value: slice.reduce((s,pt)=>s+pt[1], 0), date:null}; }
+  return {value: slice.reduce((s,pt)=>s+pt[1], 0) / slice.length, date:null};
+}
+function fmtDateOnly(ts){
+  return ts==null ? '' : new Date(ts).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+}
+
+async function fetchChartsJson(){
+  const res = await fetch(CHARTS_JSON_URL, {cache:'no-store'});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const json = await res.json();
+  const series = json && json[0] && json[0].chartPlot && json[0].chartPlot.series;
+  if(!series) throw new Error('Unexpected charts.json shape — no chartPlot.series found');
+  return series;
+}
+async function pollChartsJson(){
+  try{
+    dataSeries = await fetchChartsJson();
+    document.getElementById('chartDataInfo').textContent = 'Live data';
+  }catch(e){
+    console.warn('Re-ImaginedWX charts: poll failed —', e.message);
+    document.getElementById('chartDataInfo').textContent = 'Data unavailable';
+  }
+  populateHistoricalYears();
+  renderChart();
+  renderRecordsPanel();
+}
+
+/* ===================== Records-at-bottom panel =====================
+   Identical category/metric mapping to records.html. Always shows all
+   five trailing-window periods regardless of which chart timeframe
+   button is selected above — the two controls are independent. */
+const RECORDS_CATEGORIES = {
+  temperature: {
+    note: 'Daily high / low / average outdoor temperature.',
+    metrics: [
+      {label:'Highest', series:'outTempMax', agg:'max', fmt:(v,sys)=>fmtTemp(v, sys.temp), withDate:true},
+      {label:'Lowest',  series:'outTempMin', agg:'min', fmt:(v,sys)=>fmtTemp(v, sys.temp), withDate:true},
+      {label:'Average', series:'outTempAvg', agg:'avg', fmt:(v,sys)=>fmtTemp(v, sys.temp), withDate:false},
+    ],
+  },
+  wind: {
+    note: 'Average wind speed, highest sustained wind, and highest gust.',
+    metrics: [
+      {label:'Average Wind', series:'windSpeedAvg', agg:'avg', fmt:(v,sys)=>fmtWind(v, sys.wind), withDate:false},
+      {label:'Highest Wind',  series:'windSpeedMax', agg:'max', fmt:(v,sys)=>fmtWind(v, sys.wind), withDate:true},
+      {label:'Highest Gust',  series:'windGustMax',  agg:'max', fmt:(v,sys)=>fmtWind(v, sys.wind), withDate:true},
+    ],
+  },
+  rain: {
+    note: '"Highest Rate" isn\'t available — charts.json\'s rainRate field duplicates the daily total rather than a true rate. Showing Wettest Day instead.',
+    metrics: [
+      {label:'Total Rain',  series:'rain', agg:'sum', fmt:(v,sys)=>fmtRain(v, sys.rain), withDate:false},
+      {label:'Wettest Day', series:'rain', agg:'max', fmt:(v,sys)=>fmtRain(v, sys.rain), withDate:true},
+    ],
+  },
+  barometer: {
+    note: 'Daily high / low / average barometric pressure.',
+    metrics: [
+      {label:'Highest', series:'baromMax', agg:'max', fmt:(v,sys)=>fmtPressure(v, sys.pressure), withDate:true},
+      {label:'Lowest',  series:'baromMin', agg:'min', fmt:(v,sys)=>fmtPressure(v, sys.pressure), withDate:true},
+      {label:'Average', series:'baromAvg', agg:'avg', fmt:(v,sys)=>fmtPressure(v, sys.pressure), withDate:false},
+    ],
+  },
+  solaruv: {
+    note: 'UV Index (0-11+) and solar radiation. UV Index categories: 0-2 Low, 3-5 Moderate, 6-7 High, 8-10 Very High, 11+ Extreme.',
+    metrics: [
+      {label:'Max UV Index', series:'UVMax', agg:'max', fmt:(v,sys)=>Math.round(v)+' UV', withDate:true},
+      {label:'Max Solar',    series:'solarMax', agg:'max', fmt:(v,sys)=>Math.round(v)+' W/m²', withDate:true},
+      {label:'Avg Solar',    series:'solarAvg', agg:'avg', fmt:(v,sys)=>Math.round(v)+' W/m²', withDate:false},
+    ],
+  },
+  cloud: {
+    note: 'Cloud cover (%), visibility distance, and estimated cloud base. Visibility categories: <1km Very Poor, 1-4km Poor, 4-10km Moderate, 10-20km Good, >20km Excellent.',
+    metrics: [
+      {label:'Avg Cloud Cover', series:'cloudCover', agg:'avg', fmt:(v,sys)=>Math.round(v)+'%', withDate:false},
+      {label:'Best Visibility', series:'lightDist', agg:'max', fmt:(v,sys)=>fmtDist(v, sys.dist), withDate:true},
+      {label:'Worst Visibility', series:'lightDist', agg:'min', fmt:(v,sys)=>fmtDist(v, sys.dist), withDate:true},
+    ],
+  },
+  lightning: {
+    note: 'Lightning strike count and closest distance. Distance categories: <5km Very Close (⚡ DANGER), 5-10km Close, 10-20km Moderate, >20km Far.',
+    metrics: [
+      {label:'Total Strikes',  series:'lightCount', agg:'sum', fmt:(v,sys)=>fmtLightningCount(v), withDate:false},
+      {label:'Most Strikes',   series:'lightCount', agg:'max', fmt:(v,sys)=>fmtLightningCount(v), withDate:true},
+      {label:'Closest Strike', series:'lightDist',  agg:'min', fmt:(v,sys)=>fmtDist(v, sys.dist), withDate:true},
+    ],
+  },
+  pollen: {
+    note: 'Pollen counts (grains/m³) for six common pollen types. Severity: 0-10 Low, 10-50 Moderate, 50-200 High, 200+ Very High.',
+    metrics: [
+      {label:'Alder (max)', series:'alder', agg:'max', fmt:(v,sys)=>fmtPollen(v), withDate:true},
+      {label:'Birch (max)', series:'birch', agg:'max', fmt:(v,sys)=>fmtPollen(v), withDate:true},
+      {label:'Grass (max)', series:'grass', agg:'max', fmt:(v,sys)=>fmtPollen(v), withDate:true},
+    ],
+  },
+  airquality: {
+    note: 'Particulate matter (PM) concentrations in µg/m³. PM2.5 and PM10 are the main regulatory metrics. PM1.0 and PM4.0 shown for additional context.',
+    metrics: [
+      {label:'PM2.5 (max)', series:'pm2_5', agg:'max', fmt:(v,sys)=>fmtConc(v, sys.conc), withDate:true},
+      {label:'PM10 (max)', series:'pm10_0', agg:'max', fmt:(v,sys)=>fmtConc(v, sys.conc), withDate:true},
+      {label:'PM2.5 (avg)', series:'pm2_5', agg:'avg', fmt:(v,sys)=>fmtConc(v, sys.conc), withDate:false},
+    ],
+  },
+  gases: {
+    note: 'Greenhouse gas and air pollutant concentrations. CO₂ in ppm, all others in µg/m³.',
+    metrics: [
+      {label:'CO₂ (max)', series:'co2Max', agg:'max', fmt:(v,sys)=>Math.round(v)+' ppm', withDate:true},
+      {label:'O₃ (max)',  series:'o3Max',  agg:'max', fmt:(v,sys)=>fmtConc(v, sys.conc), withDate:true},
+      {label:'NO₂ (max)', series:'no2Max', agg:'max', fmt:(v,sys)=>fmtConc(v, sys.conc), withDate:true},
+    ],
+  },
+};
+
+const RECORDS_PERIODS = [
+  {key:'day',     label:'Day',      days:1},
+  {key:'week',    label:'Week',     days:7},
+  {key:'month',   label:'Month',    days:30},
+  {key:'year',    label:'Year',     days:365},
+  {key:'alltime', label:'All-time', days:Infinity},
+];
+
+function renderRecordsPanel(){
+  const sys = SYSTEMS[currentSystem];
+  const category = RECORDS_CATEGORIES[currentCategory];
+  const row = document.getElementById('recordsPeriodsRow');
+  if(!category){
+    row.innerHTML = '<div class="text-center">Select a category to see records.</div>';
+    return;
+  }
+  row.innerHTML = RECORDS_PERIODS.map(period => {
+    const tiles = category.metrics.map(metric => {
+      if(!dataSeries){
+        return `<div class="records-tile"><div class="records-label">${metric.label}</div><div class="records-value">--</div></div>`;
+      }
+      const slice = dataSlice(dataSeries[metric.series], period.days);
+      const {value, date} = dataAggregate(slice, metric.agg);
+      const valueHtml = value!=null ? metric.fmt(value, sys) : '--';
+      const dateHtml = (metric.withDate && date!=null) ? `<div class="records-value-date">${fmtDateOnly(date)}</div>` : '';
+      return `<div class="records-tile"><div class="records-label">${metric.label}</div><div class="records-value">${valueHtml}</div>${dateHtml}</div>`;
+    }).join('');
+    return `<div class="records-period-card"><div class="records-period-label">${period.label}</div><div class="records-grid">${tiles}</div></div>`;
+  }).join('');
+}
+
+/* ===================== Chart category config =====================
+   Real fields only, confirmed against charts_json.tmpl. */
+const POLLEN_TYPES = [
+  {name:'Alder',    series:'alder',    color:'#E8A33D', emoji:'🌳'},
+  {name:'Birch',    series:'birch',    color:'#6FB6DD', emoji:'🌳'},
+  {name:'Olive',    series:'olive',    color:'#5BBB8A', emoji:'🌿'},
+  {name:'Grass',    series:'grass',    color:'#C9DA1E', emoji:'🌾'},
+  {name:'Mugwort',  series:'mugwort',  color:'#D6BE4E', emoji:'🌱'},
+  {name:'Ragweed',  series:'ragweed',  color:'#E36B57', emoji:'🌿'},
+];
+
+// Particle size definitions with distinct colors
+const PARTICLE_TYPES = [
+  {name:'PM1.0',  series:'pm1_0',  color:'#6FB6DD', emoji:'🟦', size:'≤1.0µm'},
+  {name:'PM2.5',  series:'pm2_5',  color:'#E8A33D', emoji:'🟨', size:'≤2.5µm'},
+  {name:'PM4.0',  series:'pm4_0',  color:'#D6BE4E', emoji:'🟡', size:'≤4.0µm'},
+  {name:'PM10',   series:'pm10_0', color:'#E36B57', emoji:'🟧', size:'≤10µm'},
+];
+
+// Gas definitions with distinct colors
+const GAS_TYPES = [
+  {name:'CO',   series:'co',   color:'#6FB6DD', unit:'µg/m³', emoji:'💨', label:'Carbon Monoxide'},
+  {name:'CO₂',  series:'co2',  color:'#8C9A95', unit:'ppm',   emoji:'🌫️', label:'Carbon Dioxide'},
+  {name:'NH₃',  series:'nh3',  color:'#D6BE4E', unit:'µg/m³', emoji:'🧪', label:'Ammonia'},
+  {name:'NO₂',  series:'no2',  color:'#E36B57', unit:'µg/m³', emoji:'🚗', label:'Nitrogen Dioxide'},
+  {name:'O₃',   series:'o3',   color:'#5BBB8A', unit:'µg/m³', emoji:'☀️', label:'Ozone'},
+  {name:'SO₂',  series:'so2',  color:'#C9DA1E', unit:'µg/m³', emoji:'🏭', label:'Sulfur Dioxide'},
+];
+
+// Special mapping for daily series (some use Max suffix)
+const GAS_DAILY_SERIES = {
+  'CO':   'coMax',
+  'CO₂':  'co2Max',
+  'NH₃':  'nh3Max',
+  'NO₂':  'no2Max',
+  'O₃':   'o3Max',
+  'SO₂':  'so2Max',
+};
+
+// Special mapping for hourly series (use Hourly suffix)
+const GAS_HOURLY_SERIES = {
+  'CO':   'coHourly',
+  'CO₂':  'co2Hourly',
+  'NH₃':  'nh3Hourly',
+  'NO₂':  'no2Hourly',
+  'O₃':   'o3Hourly',
+  'SO₂':  'so2Hourly',
+};
+
+const CHART_CATEGORIES = {
+  temperature: {
+    note: '',
+    dailyType: 'line',
+    daily: [
+      {name:'High', series:'outTempMax', kind:'temp', color:'tempHigh'},
+      {name:'Low',  series:'outTempMin', kind:'temp', color:'tempLow'},
+      {name:'Avg',  series:'outTempAvg', kind:'temp', color:'tempAvg'},
+    ],
+    hourly: [
+      {name:'Temp',     series:'outTempHourly',  kind:'temp',  color:'tempAvg'},
+      {name:'Dew Point',series:'outDewHourly',   kind:'temp',  color:'dew', area:true},
+      {name:'Humidity', series:'outHumidHourly', kind:'humid', color:'humid', yAxisIndex:1},
+    ],
+    yAxes: ['temp','humid'],
+  },
+  wind: {
+    note: '',
+    dailyType: 'line',
+    daily: [
+      {name:'Average Wind', series:'windSpeedAvg', kind:'wind', color:'tempAvg'},
+      {name:'Highest Wind',  series:'windSpeedMax', kind:'wind', color:'tempHigh'},
+      {name:'Highest Gust',  series:'windGustMax',  kind:'wind', color:'dew'},
+    ],
+    hourly: [
+      {name:'Wind Speed', series:'windSpeedHourly', kind:'wind', color:'tempAvg'},
+      {name:'Gust',        series:'windGustHourly',  kind:'wind', color:'dew'},
+    ],
+    yAxes: ['wind'],
+  },
+  rain: {
+    note: 'Only a daily TOTAL is available from charts.json for Week/Month/Year/Historical — there\'s no genuine daily rain-RATE field (see Records panel below for why). The 24-hour view can show a true hourly rate, since rainRateHourly is a real, distinct field.',
+    dailyType: 'bar',
+    daily: [
+      {name:'Total Rain', series:'rain', kind:'rain', color:'tempAvg'},
+    ],
+    hourly: [
+      {name:'Rain', series:'rainHourly', kind:'rain', color:'tempAvg', type:'bar'},
+      {name:'Rate (per hr)', series:'rainRateHourly', kind:'rain', color:'dew', yAxisIndex:1},
+    ],
+    yAxes: ['rain','rain2'],
+  },
+  barometer: {
+    note: '',
+    dailyType: 'line',
+    daily: [
+      {name:'High', series:'baromMax', kind:'pressure', color:'tempHigh'},
+      {name:'Low',  series:'baromMin', kind:'pressure', color:'tempLow'},
+      {name:'Avg',  series:'baromAvg', kind:'pressure', color:'tempAvg'},
+    ],
+    hourly: [
+      {name:'High', series:'baromMaxHourly', kind:'pressure', color:'tempHigh'},
+      {name:'Low',  series:'baromMinHourly', kind:'pressure', color:'tempLow'},
+      {name:'Avg',  series:'baromAvgHourly', kind:'pressure', color:'tempAvg'},
+    ],
+    yAxes: ['pressure'],
+  },
+  solaruv: {
+    note: 'UV Index (0-11+) and solar radiation. UV Index categories: 0-2 Low (green), 3-5 Moderate (yellow), 6-7 High (orange), 8-10 Very High (red), 11+ Extreme (purple).',
+    dailyType: 'line',
+    daily: [
+      {name:'Max UV Index', series:'UVMax', kind:'uv', color:'uvHigh'},
+      {name:'Max Solar',    series:'solarMax', kind:'solar', color:'tempHigh'},
+      {name:'Avg Solar',    series:'solarAvg', kind:'solar', color:'tempAvg'},
+    ],
+    hourly: [
+      {name:'UV Index',      series:'uvHourly', kind:'uv', color:'uvHigh', yAxisIndex:0},
+      {name:'Solar Rad.',    series:'solarRadiationHourly', kind:'solar', color:'tempHigh', yAxisIndex:1},
+    ],
+    yAxes: ['uv','solar'],
+  },
+  cloud: {
+    note: 'Cloud cover (0-100%), visibility distance, and estimated cloud base height. Visibility: <1km Very Poor, 1-4km Poor, 4-10km Moderate, 10-20km Good, >20km Excellent.',
+    dailyType: 'line',
+    daily: [
+      {name:'Avg Cloud Cover', series:'cloudCover', kind:'cloud', color:'cloud'},
+      {name:'Best Visibility', series:'lightDist', kind:'dist', color:'visGood'},
+      {name:'Worst Visibility', series:'lightDist', kind:'dist', color:'visPoor'},
+    ],
+    hourly: [
+      {name:'Cloud Cover',    series:'cloudCover', kind:'cloud', color:'cloud', yAxisIndex:0, type:'bar'},
+      {name:'Visibility',     series:'lightDist',  kind:'dist',  color:'visGood', yAxisIndex:1, area:true},
+    ],
+    yAxes: ['cloud','dist'],
+  },
+  lightning: {
+    note: 'Lightning strike count (bar) and distance to nearest strike (line, right axis). Distance categories: <5km Very Close (⚡ DANGER), 5-10km Close, 10-20km Moderate, >20km Far.',
+    dailyType: 'bar',
+    daily: [
+      {name:'Strikes', series:'lightCount', kind:'count', color:'ltgCount'},
+      {name:'Nearest', series:'lightDist',  kind:'dist',  color:'ltgDist'},
+    ],
+    hourly: [
+      {name:'Strikes',  series:'lightCountHourly', kind:'count', color:'ltgCount', type:'bar', yAxisIndex:0},
+      {name:'Distance', series:'lightDistHourly',  kind:'dist',  color:'ltgDist', yAxisIndex:1, area:true},
+    ],
+    yAxes: ['count','dist'],
+  },
+  pollen: {
+    note: 'Pollen counts (grains/m³) for six common pollen types. Severity guide: 0-10 Low (green), 10-50 Moderate (yellow), 50-200 High (orange), 200+ Very High (red).',
+    dailyType: 'line',
+    daily: POLLEN_TYPES.map(p => ({
+      name: p.name,
+      series: p.series,
+      kind: 'pollen',
+      color: p.color,
+    })),
+    hourly: POLLEN_TYPES.map(p => ({
+      name: p.name,
+      series: p.series+'Hourly',
+      kind: 'pollen',
+      color: p.color,
+      area: false,
+    })),
+    yAxes: ['pollen'],
+  },
+  airquality: {
+    note: 'Particulate matter (PM) concentrations in µg/m³. PM2.5 and PM10 are the main regulatory metrics. PM1.0 and PM4.0 shown for additional context. Higher values indicate more particles in the air.',
+    dailyType: 'line',
+    daily: PARTICLE_TYPES.map(p => ({
+      name: p.name,
+      series: p.series,
+      kind: 'conc',
+      color: p.color,
+    })),
+    hourly: PARTICLE_TYPES.map(p => ({
+      name: p.name,
+      series: p.series+'Hourly',
+      kind: 'conc',
+      color: p.color,
+      area: false,
+    })),
+    yAxes: ['conc'],
+  },
+  gases: {
+    note: 'Greenhouse gas and air pollutant concentrations. CO₂ in ppm (parts per million), all others in µg/m³. These gases affect air quality and climate.',
+    dailyType: 'line',
+    daily: GAS_TYPES.map(g => ({
+      name: g.name,
+      series: GAS_DAILY_SERIES[g.name],
+      kind: 'gas',
+      color: g.color,
+      unit: g.unit,
+    })),
+    hourly: GAS_TYPES.map(g => ({
+      name: g.name,
+      series: GAS_HOURLY_SERIES[g.name],
+      kind: 'gas',
+      color: g.color,
+      unit: g.unit,
+      area: false,
+    })),
+    yAxes: ['gas'],
+  },
+};
+
+const CONVERTERS = {
+  temp:     (v,sys)=>convTemp(v, sys.temp),
+  wind:     (v,sys)=>convWind(v, sys.wind),
+  pressure: (v,sys)=>convPressure(v, sys.pressure),
+  rain:     (v,sys)=>convRain(v, sys.rain),
+  humid:    (v,sys)=>v,
+  uv:       (v,sys)=>v,
+  solar:    (v,sys)=>v,
+  cloud:    (v,sys)=>v,
+  dist:     (v,sys)=>convDist(v, sys.dist),
+  count:    (v,sys)=>v,
+  pollen:   (v,sys)=>v,
+  conc:     (v,sys)=>v,
+  gas:      (v,sys)=>v,
+};
+const UNIT_LABELS = {
+  temp:     sys=>tempUnitLabel(sys),
+  wind:     sys=>windUnitLabel(sys),
+  pressure: sys=>pressureUnitLabel(sys),
+  rain:     sys=>rainUnitLabel(sys),
+  humid:    ()=>'%',
+  uv:       ()=>'UV Index',
+  solar:    ()=>'W/m²',
+  cloud:    ()=>'%',
+  dist:     sys=>distUnitLabel(sys),
+  count:    ()=>'Strikes',
+  pollen:   ()=>'grains/m³',
+  conc:     sys=>concUnitLabel(sys),
+  gas:      ()=>'', // We'll set per-series unit labels
+};
+
+/* ===================== Theme-aware chart palette ===================== */
+function isDarkTheme(){ return document.documentElement.getAttribute('data-bs-theme') === 'dark'; }
+function chartColors(){
+  const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return {
+    text: cssVar('--bs-body-color'),
+    grid: isDarkTheme() ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.25)',
+    tempHigh: cssVar('--bw-danger'),
+    tempLow:  cssVar('--bw-sky'),
+    tempAvg:  cssVar('--bw-accent'),
+    dew:      cssVar('--bw-lime'),
+    humid:    cssVar('--bw-good'),
+    uvHigh:   '#D8001D',
+    uvMod:    '#F7E400',
+    uvLow:    '#1F8C3F',
+    uvExtreme:'#6B49C8',
+    cloud:    '#8C9A95',
+    visGood:  '#5BBB8A',
+    visPoor:  '#E36B57',
+    ltgCount: '#F7E400',
+    ltgDist:  '#E36B57',
+  };
+}
+
+/* ===================== Tooltip background helper =====================
+   Light theme: use the same dark blue as the chart buttons (--bs-tertiary-bg)
+   Dark theme: keep the existing dark background
+   This ensures tooltips are readable in both themes. */
+function getTooltipBgColor() {
+  if (isDarkTheme()) {
+    return 'rgba(20,20,25,0.9)';
+  }
+  // Light theme: use the chart button background color (--bs-tertiary-bg)
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bs-tertiary-bg').trim();
+  return bg || '#1B3A57';
+}
+
+/* ===================== State + chart instance ===================== */
+const VALID_CATS = Object.keys(CHART_CATEGORIES);
+function getInitialCategory(){
+  const url = new URL(window.location.href);
+  const t = url.searchParams.get('type');
+  return VALID_CATS.includes(t) ? t : 'temperature';
+}
+let currentCategory = getInitialCategory();
+let currentTimeframe = 'day'; // day | week | month | year | historical
+let historicalYear = null;
+let chart = null;
+
+function getChart(){
+  if(chart) return chart;
+  try{
+    chart = echarts.init(document.getElementById('chartContainer'), null, {renderer:'svg'});
+    window.addEventListener('resize', ()=>chart.resize());
+  }catch(e){
+    // No canvas/SVG support in this environment (e.g. a headless test
+    // harness) — fail quietly rather than breaking the rest of the page.
+    console.warn('Re-ImaginedWX charts: ECharts unavailable —', e.message);
+    chart = { setOption(){}, resize(){} };
+  }
+  return chart;
+}
+
+function populateHistoricalYears(){
+  const sel = document.getElementById('chartHistYear');
+  if(!dataSeries) return;
+  const cat = CHART_CATEGORIES[currentCategory];
+  if(!cat || !cat.daily || !cat.daily.length){
+    sel.innerHTML = '';
+    return;
+  }
+  // Use the first daily series to find years
+  const baseSeries = dataSeries[cat.daily[0].series] || [];
+  const years = Array.from(new Set(
+    baseSeries.filter(pt=>pt && pt[1]!=null).map(pt => new Date(pt[0]).getFullYear())
+  )).sort((a,b)=>b-a);
+  const prevValue = historicalYear;
+  sel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(years.length){
+    historicalYear = years.includes(prevValue) ? prevValue : years[0];
+    sel.value = historicalYear;
+  }
+}
+
+function setActiveTimeframeButton(){
+  document.querySelectorAll('.chart-tf-btn').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.tf === currentTimeframe);
+  });
+  document.getElementById('chartHistYear').classList.toggle('active', currentTimeframe === 'historical');
+}
+
+function renderChart(){
+  const sys = SYSTEMS[currentSystem];
+  const cat = CHART_CATEGORIES[currentCategory];
+  document.getElementById('chartCategoryNote').textContent = cat ? cat.note : '';
+  setActiveTimeframeButton();
+
+  const c = getChart();
+  if(!dataSeries || !cat){
+    c.setOption({ graphic:[{type:'text', left:'center', top:'middle',
+      style:{text: dataSeries ? 'No category data' : 'Loading…', fill:chartColors().text, fontSize:13}}] }, true);
+    return;
+  }
+
+  if(currentTimeframe === 'day'){
+    renderHourly(c, sys, cat);
+  } else {
+    const daysMap = {week:7, month:30, year:365};
+    if(currentTimeframe === 'historical'){
+      renderDaily(c, sys, cat, {historicalYear});
+    } else {
+      renderDaily(c, sys, cat, {trailingDays: daysMap[currentTimeframe]});
+    }
+  }
+}
+
+function renderHourly(c, sys, cat){
+  const colors = chartColors();
+  const defs = cat.hourly;
+  if(!defs || !defs.length){
+    c.setOption({ graphic:[{type:'text', left:'center', top:'middle',
+      style:{text:'No 24-hour data available for this category.', fill:colors.text, fontSize:13}}] }, true);
+    return;
+  }
+  // Use the first defined hourly series to establish the shared time axis.
+  const base = (dataSeries[defs[0].series] || []).filter(pt=>pt && pt[1]!=null);
+  if(!base.length){
+    c.setOption({ graphic:[{type:'text', left:'center', top:'middle',
+      style:{text:'No 24-hour data available yet.', fill:colors.text, fontSize:13}}] }, true);
+    return;
+  }
+  const labels = base.map(pt => {
+    const d = new Date(pt[0]);
+    return d.getHours().toString().padStart(2,'0')+':00';
+  });
+
+  const yAxes = cat.yAxes.map((kind,i) => {
+    const label = UNIT_LABELS[kind] ? '('+UNIT_LABELS[kind](sys)+')' : '';
+    const isCloud = kind === 'cloud';
+    const isDist = kind === 'dist';
+    const isCount = kind === 'count';
+    return {
+      type:'value',
+      position: i===0 ? 'left' : 'right',
+      name: label,
+      axisLabel:{color:colors.text},
+      splitLine: i===0 ? {lineStyle:{color:colors.grid, opacity:0.3}} : {show:false},
+      min: (isCloud || isDist || isCount) ? 0 : undefined,
+      max: isCloud ? 100 : undefined,
+    };
+  });
+
+  const series = defs.map(d => {
+    // If d.color is a hex string (starts with #), use it directly, otherwise look up in colors
+    const color = (d.color && d.color.startsWith && d.color.startsWith('#')) ? d.color : (colors[d.color] || colors.tempAvg);
+    const data = (dataSeries[d.series]||[]).map(pt => pt && pt[1]!=null ? CONVERTERS[d.kind](pt[1], sys) : null);
+    const isCloud = d.kind === 'cloud';
+    const isDist = d.kind === 'dist';
+    const isCount = d.kind === 'count';
+
+    let extraProps = {};
+    if (isCount || d.type === 'bar') {
+      extraProps = {
+        type: 'bar',
+        barWidth: '60%',
+      };
+      if (isCount) {
+        extraProps.itemStyle = {
+          color: function(params) {
+            const val = params.value;
+            if (val === 0 || val === null) return '#4a4a4a';
+            if (val < 5) return '#D6BE4E';
+            if (val < 20) return '#F7E400';
+            if (val < 50) return '#F85900';
+            return '#D8001D';
+          }
+        };
+      }
+    } else {
+      extraProps = {
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        lineStyle: {width: 2},
+        areaStyle: (d.area || isDist) ? {color, opacity:0.15} : undefined,
+      };
+    }
+
+    // Add mark area for visibility categories if this is the visibility series
+    let markArea = undefined;
+    if (isDist) {
+      markArea = {
+        silent: true,
+        data: [
+          [{yAxis: 0, itemStyle: {color: '#D8001D', opacity: 0.08}}, {yAxis: 1, label: {formatter: 'Very Poor', color: colors.text, fontSize: 9}}],
+          [{yAxis: 1, itemStyle: {color: '#E36B57', opacity: 0.08}}, {yAxis: 4, label: {formatter: 'Poor', color: colors.text, fontSize: 9}}],
+          [{yAxis: 4, itemStyle: {color: '#D6BE4E', opacity: 0.08}}, {yAxis: 10, label: {formatter: 'Moderate', color: colors.text, fontSize: 9}}],
+          [{yAxis: 10, itemStyle: {color: '#6FB6DD', opacity: 0.08}}, {yAxis: 20, label: {formatter: 'Good', color: colors.text, fontSize: 9}}],
+          [{yAxis: 20, itemStyle: {color: '#5BBB8A', opacity: 0.08}}, {yAxis: 999, label: {formatter: 'Excellent', color: colors.text, fontSize: 9}}],
+        ]
+      };
+    }
+
+    // Add mark area for lightning distance categories
+    if (d.kind === 'dist' && !isDist) {
+      // Only if it's the lightning distance series (not the visibility series which already has markArea)
+    }
+    // Actually we need a way to tell if it's lightning distance vs visibility distance
+    // The series name 'Distance' indicates lightning distance
+    if (d.name === 'Distance') {
+      markArea = {
+        silent: true,
+        data: [
+          [{yAxis: 0, itemStyle: {color: '#D8001D', opacity: 0.12}}, {yAxis: 5, label: {formatter: '⚡ Very Close', color: '#D8001D', fontSize: 9, fontWeight: 'bold'}}],
+          [{yAxis: 5, itemStyle: {color: '#E36B57', opacity: 0.08}}, {yAxis: 10, label: {formatter: 'Close', color: '#E36B57', fontSize: 9}}],
+          [{yAxis: 10, itemStyle: {color: '#D6BE4E', opacity: 0.08}}, {yAxis: 20, label: {formatter: 'Moderate', color: '#D6BE4E', fontSize: 9}}],
+          [{yAxis: 20, itemStyle: {color: '#6FB6DD', opacity: 0.08}}, {yAxis: 999, label: {formatter: 'Far', color: '#6FB6DD', fontSize: 9}}],
+        ]
+      };
+    }
+
+    // For UV Index, add mark areas with color bands
+    if (d.kind === 'uv') {
+      markArea = {
+        silent: true,
+        data: [
+          [{yAxis: 0, itemStyle: {color: '#1F8C3F', opacity: 0.15}}, {yAxis: 3}],
+          [{yAxis: 3, itemStyle: {color: '#F7E400', opacity: 0.15}}, {yAxis: 6}],
+          [{yAxis: 6, itemStyle: {color: '#F85900', opacity: 0.15}}, {yAxis: 8}],
+          [{yAxis: 8, itemStyle: {color: '#D8001D', opacity: 0.15}}, {yAxis: 11}],
+          [{yAxis: 11, itemStyle: {color: '#6B49C8', opacity: 0.15}}, {yAxis: 15}],
+        ]
+      };
+    }
+
+    return {
+      name: d.name,
+      yAxisIndex: d.yAxisIndex || 0,
+      data: data,
+      itemStyle: {color},
+      ...extraProps,
+      markArea: markArea,
+    };
+  });
+
+  // Custom tooltip formatter based on category
+  const tooltipFormatter = function(params) {
+    let result = `<strong>${params[0].axisValue}</strong><br/>`;
+    params.forEach(p => {
+      const val = p.value;
+      // UV Index
+      if (p.seriesName === 'UV Index') {
+        let category = '';
+        if (val <= 2) category = '🟢 Low';
+        else if (val <= 5) category = '🟡 Moderate';
+        else if (val <= 7) category = '🟠 High';
+        else if (val <= 10) category = '🔴 Very High';
+        else if (val > 10) category = '🟣 Extreme';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${category}<br/>`;
+      }
+      // Pollen
+      else if (p.seriesName === 'Alder' || p.seriesName === 'Birch' || p.seriesName === 'Olive' ||
+               p.seriesName === 'Grass' || p.seriesName === 'Mugwort' || p.seriesName === 'Ragweed') {
+        let severity = '';
+        if (val <= 10) severity = '🟢 Low';
+        else if (val <= 50) severity = '🟡 Moderate';
+        else if (val <= 200) severity = '🟠 High';
+        else severity = '🔴 Very High';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${severity}<br/>`;
+      }
+      // Air Quality - PM2.5
+      else if (p.seriesName.includes('PM2.5') || p.seriesName === 'PM2.5') {
+        let category = '';
+        if (val <= 12) category = '🟢 Good';
+        else if (val <= 35) category = '🟡 Moderate';
+        else if (val <= 55) category = '🟠 Unhealthy (Sensitive)';
+        else if (val <= 150) category = '🔴 Unhealthy';
+        else if (val <= 250) category = '🟣 Very Unhealthy';
+        else category = '⚫ Hazardous';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${category}<br/>`;
+      }
+      // Air Quality - PM10
+      else if (p.seriesName.includes('PM10') || p.seriesName === 'PM10') {
+        let category = '';
+        if (val <= 54) category = '🟢 Good';
+        else if (val <= 154) category = '🟡 Moderate';
+        else if (val <= 254) category = '🟠 Unhealthy (Sensitive)';
+        else if (val <= 354) category = '🔴 Unhealthy';
+        else if (val <= 424) category = '🟣 Very Unhealthy';
+        else category = '⚫ Hazardous';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${category}<br/>`;
+      }
+      // Air Quality - PM1.0 and PM4.0
+      else if (p.seriesName.includes('PM1.0') || p.seriesName === 'PM1.0' ||
+               p.seriesName.includes('PM4.0') || p.seriesName === 'PM4.0') {
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong><br/>`;
+      }
+      // Greenhouse Gases - CO₂
+      else if (p.seriesName.includes('CO₂')) {
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ppm<br/>`;
+      }
+      // Greenhouse Gases - others
+      else if (p.seriesName === 'CO' || p.seriesName === 'NH₃' || p.seriesName === 'NO₂' ||
+               p.seriesName === 'O₃' || p.seriesName === 'SO₂') {
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> µg/m³<br/>`;
+      }
+      // Lightning
+      else if (p.seriesName === 'Strikes') {
+        let emoji = val === 0 ? '⚡' : val < 5 ? '⚡' : val < 20 ? '⚡⚡' : '⚡⚡⚡';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${emoji}<br/>`;
+      }
+      else if (p.seriesName === 'Distance') {
+        let category = '';
+        if (val < 5) category = '🔴 VERY CLOSE!';
+        else if (val < 10) category = '🟠 Close';
+        else if (val < 20) category = '🟡 Moderate';
+        else category = '🟢 Far';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${category}<br/>`;
+      }
+      // Cloud Cover
+      else if (p.seriesName === 'Cloud Cover') {
+        let desc = '';
+        if (val <= 10) desc = '☀️ Clear';
+        else if (val <= 30) desc = '🌤️ Mostly Clear';
+        else if (val <= 60) desc = '⛅ Partly Cloudy';
+        else if (val <= 85) desc = '☁️ Mostly Cloudy';
+        else desc = '🌧️ Overcast';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}%</strong> ${desc}<br/>`;
+      }
+      // Visibility
+      else if (p.seriesName === 'Visibility') {
+        let category = '';
+        if (val < 1) category = '🔴 Very Poor';
+        else if (val < 4) category = '🟠 Poor';
+        else if (val < 10) category = '🟡 Moderate';
+        else if (val < 20) category = '🟢 Good';
+        else category = '🌟 Excellent';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${category}<br/>`;
+      }
+      // Default fallback
+      else {
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong><br/>`;
+      }
+    });
+    return result;
+  };
+
+  const tooltipBg = getTooltipBgColor();
+
+  c.setOption({
+    backgroundColor:'transparent', textStyle:{color:colors.text},
+    tooltip:{trigger:'axis', axisPointer:{type:'cross'},
+      backgroundColor: tooltipBg,
+      textStyle:{color:colors.text}, borderColor:colors.grid,
+      formatter: tooltipFormatter,
+    },
+    legend:{top:6, textStyle:{color:colors.text}, type:'scroll'},
+    grid:{top:50, bottom:40, left:60, right:60},
+    xAxis:{type:'category', data:labels, axisLine:{lineStyle:{color:colors.grid}}, axisLabel:{color:colors.text, rotate:45, fontSize:10}},
+    yAxis: yAxes,
+    series,
+  }, true);
+}
+
+function renderDaily(c, sys, cat, {trailingDays, historicalYear}={}){
+  const colors = chartColors();
+  const defs = cat.daily;
+  const base = (dataSeries[defs[0].series] || []).filter(pt=>pt && pt[1]!=null);
+  if(!base.length){
+    c.setOption({ graphic:[{type:'text', left:'center', top:'middle',
+      style:{text:'No data available yet.', fill:colors.text, fontSize:13}}] }, true);
+    return;
+  }
+  let points;
+  if(historicalYear != null){
+    points = base.filter(pt => new Date(pt[0]).getFullYear() === Number(historicalYear));
+  } else {
+    points = trailingDays ? base.slice(Math.max(0, base.length - trailingDays)) : base;
+  }
+  if(!points.length){
+    c.setOption({ graphic:[{type:'text', left:'center', top:'middle',
+      style:{text:'No data for this period.', fill:colors.text, fontSize:13}}] }, true);
+    return;
+  }
+  const dateMap = new Map();
+  points.forEach((pt,i)=>dateMap.set(pt[0], i));
+  const dates = points.map(pt=>pt[0]);
+  const labels = dates.map(ts => new Date(ts).toLocaleDateString('en-GB', {day:'numeric', month:'short'}));
+
+  const series = defs.map(d => {
+    const seriesArr = dataSeries[d.series] || [];
+    const arr = new Array(dates.length).fill(null);
+    seriesArr.forEach(pt => {
+      if(pt && pt[1]!=null && dateMap.has(pt[0])) arr[dateMap.get(pt[0])] = CONVERTERS[d.kind](pt[1], sys);
+    });
+    // If d.color is a hex string, use it directly, otherwise look up in colors
+    const color = (d.color && d.color.startsWith && d.color.startsWith('#')) ? d.color : (colors[d.color] || colors.tempAvg);
+    const isCount = d.kind === 'count';
+    const seriesName = d.unit ? `${d.name} (${d.unit})` : d.name;
+    return {
+      name: seriesName,
+      type: isCount ? 'bar' : cat.dailyType,
+      data: arr,
+      itemStyle: isCount ? {
+        color: function(params) {
+          const val = params.value;
+          if (val === 0 || val === null) return '#4a4a4a';
+          if (val < 5) return '#D6BE4E';
+          if (val < 20) return '#F7E400';
+          if (val < 50) return '#F85900';
+          return '#D8001D';
+        }
+      } : {color},
+      lineStyle: cat.dailyType==='line' ? {width:2} : undefined,
+      smooth: cat.dailyType==='line' && !isCount,
+      showSymbol: isCount ? true : false,
+      barWidth: isCount ? '50%' : undefined,
+      yAxisIndex: d.yAxisIndex || 0,
+    };
+  });
+
+  const yKind = defs[0].kind;
+  const yLabel = UNIT_LABELS[yKind] ? '('+UNIT_LABELS[yKind](sys)+')' : '';
+  const isCloud = yKind === 'cloud';
+
+  // Determine if we need dual y-axes (for lightning: strikes + distance)
+  const hasDual = defs.some(d => d.yAxisIndex === 1);
+
+  const yAxes = hasDual ? [
+    {type:'value', name: yLabel, axisLabel:{color:colors.text}, splitLine:{lineStyle:{color:colors.grid, opacity:0.3}}, min: isCloud ? 0 : undefined, max: isCloud ? 100 : undefined},
+    {type:'value', name: UNIT_LABELS['dist'] ? '('+UNIT_LABELS['dist'](sys)+')' : '', axisLabel:{color:colors.text}, splitLine:{show:false}, position:'right', min: 0}
+  ] : [
+    {type:'value', name: yLabel, axisLabel:{color:colors.text}, splitLine:{lineStyle:{color:colors.grid, opacity:0.3}}, min: isCloud ? 0 : undefined, max: isCloud ? 100 : undefined}
+  ];
+
+  // Custom tooltip formatter for daily view
+  const tooltipFormatter = function(params) {
+    let result = `<strong>${params[0].axisValue}</strong><br/>`;
+    params.forEach(p => {
+      const val = p.value;
+      // Pollen
+      if (p.seriesName === 'Alder' || p.seriesName === 'Birch' || p.seriesName === 'Olive' ||
+          p.seriesName === 'Grass' || p.seriesName === 'Mugwort' || p.seriesName === 'Ragweed') {
+        let severity = '';
+        if (val <= 10) severity = '🟢 Low';
+        else if (val <= 50) severity = '🟡 Moderate';
+        else if (val <= 200) severity = '🟠 High';
+        else severity = '🔴 Very High';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${severity}<br/>`;
+      }
+      // Air Quality - PM2.5
+      else if (p.seriesName.includes('PM2.5') || p.seriesName === 'PM2.5') {
+        let category = '';
+        if (val <= 12) category = '🟢 Good';
+        else if (val <= 35) category = '🟡 Moderate';
+        else if (val <= 55) category = '🟠 Unhealthy (Sensitive)';
+        else if (val <= 150) category = '🔴 Unhealthy';
+        else if (val <= 250) category = '🟣 Very Unhealthy';
+        else category = '⚫ Hazardous';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${category}<br/>`;
+      }
+      // Air Quality - PM10
+      else if (p.seriesName.includes('PM10') || p.seriesName === 'PM10') {
+        let category = '';
+        if (val <= 54) category = '🟢 Good';
+        else if (val <= 154) category = '🟡 Moderate';
+        else if (val <= 254) category = '🟠 Unhealthy (Sensitive)';
+        else if (val <= 354) category = '🔴 Unhealthy';
+        else if (val <= 424) category = '🟣 Very Unhealthy';
+        else category = '⚫ Hazardous';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${category}<br/>`;
+      }
+      // Air Quality - PM1.0 and PM4.0
+      else if (p.seriesName.includes('PM1.0') || p.seriesName === 'PM1.0' ||
+               p.seriesName.includes('PM4.0') || p.seriesName === 'PM4.0') {
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong><br/>`;
+      }
+      // Greenhouse Gases - CO₂
+      else if (p.seriesName.includes('CO₂')) {
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ppm<br/>`;
+      }
+      // Greenhouse Gases - others
+      else if (p.seriesName === 'CO' || p.seriesName === 'NH₃' || p.seriesName === 'NO₂' ||
+               p.seriesName === 'O₃' || p.seriesName === 'SO₂') {
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> µg/m³<br/>`;
+      }
+      // Lightning
+      else if (p.seriesName === 'Strikes') {
+        let emoji = val === 0 ? '⚡' : val < 5 ? '⚡' : val < 20 ? '⚡⚡' : '⚡⚡⚡';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${emoji}<br/>`;
+      }
+      else if (p.seriesName === 'Nearest') {
+        let category = '';
+        if (val < 5) category = '🔴 VERY CLOSE!';
+        else if (val < 10) category = '🟠 Close';
+        else if (val < 20) category = '🟡 Moderate';
+        else category = '🟢 Far';
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong> ${category}<br/>`;
+      }
+      // Default fallback
+      else {
+        result += `${p.marker} ${p.seriesName}: <strong>${val}</strong><br/>`;
+      }
+    });
+    return result;
+  };
+
+  const tooltipBg = getTooltipBgColor();
+
+  c.setOption({
+    backgroundColor:'transparent', textStyle:{color:colors.text},
+    tooltip:{trigger:'axis', axisPointer:{type:'cross'},
+      backgroundColor: tooltipBg,
+      textStyle:{color:colors.text}, borderColor:colors.grid,
+      formatter: tooltipFormatter,
+    },
+    legend:{top:6, textStyle:{color:colors.text}, type:'scroll'},
+    grid:{top:50, bottom:40, left:60, right: hasDual ? 60 : 30},
+    xAxis:{type:'category', data:labels, axisLine:{lineStyle:{color:colors.grid}}, axisLabel:{color:colors.text, rotate: dates.length>40?45:0, fontSize:10}},
+    yAxis: yAxes,
+    series,
+  }, true);
+}
+
+/* ===================== Wiring ===================== */
+document.querySelectorAll('.records-tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentCategory = btn.dataset.cat;
+    const url = new URL(window.location.href);
+    url.searchParams.set('type', currentCategory);
+    history.replaceState(null, '', url);
+    document.querySelectorAll('.records-tab').forEach(b=>b.classList.toggle('active', b===btn));
+    populateHistoricalYears();
+    renderChart();
+    renderRecordsPanel();
+  });
+});
+document.querySelectorAll('.chart-tf-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentTimeframe = btn.dataset.tf;
+    renderChart();
+  });
+});
+document.getElementById('chartHistYear').addEventListener('change', e=>{
+  historicalYear = e.target.value;
+  currentTimeframe = 'historical';
+  setActiveTimeframeButton();
+  renderChart();
+});
+document.getElementById('chartHistYear').addEventListener('click', ()=>{
+  currentTimeframe = 'historical';
+  setActiveTimeframeButton();
+  renderChart();
+});
+// Initial tab active state from the URL.
+document.querySelectorAll('.records-tab').forEach(b=>b.classList.toggle('active', b.dataset.cat===currentCategory));
+
+/* ===================== Theme: Auto / Light / Dark =====================
+   Simplified, as in records.html — no live.json feed on this page.
+   Split the same way climate.html's is, now that the navbar is a
+   w3-include-html include rather than static markup: applyTheme() only
+   touches things that exist immediately (data-bs-theme, the chart's
+   colors); syncThemeNavUI() touches the nav's theme icon/menu and
+   defensively no-ops until navbar.html has actually landed in the DOM —
+   see includeHTML()'s callback below for where it gets called once that
+   happens. */
+const root = document.documentElement;
+let themeMode = localStorage.getItem('bircheswx-theme-mode') || 'auto';
+
+function resolveTheme(){
+  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+function applyTheme(){
+  root.setAttribute('data-bs-theme', resolveTheme());
+  syncThemeNavUI();
+  renderChart(); // re-theme the chart's colors on an actual flip
+}
+function syncThemeNavUI(){
+  const sunIcon = document.getElementById('themeIconSun');
+  if(!sunIcon) return; // navbar.html hasn't loaded yet — see includeHTML() callback below
+  const resolved = resolveTheme();
+  sunIcon.style.display = resolved==='light' ? '' : 'none';
+  document.getElementById('themeIconMoon').style.display = resolved==='dark' ? '' : 'none';
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.classList.toggle('active-theme', el.dataset.themeChoice===themeMode);
+  });
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+  if(themeMode==='auto') applyTheme();
+});
+applyTheme();
+
+/* ===================== Hide the current page's own nav link =====================
+   Once navbar.html has loaded, hide whichever top-level nav button
+   points at the page we're already on (e.g. no "Climate" button while
+   actually on climate.html) — there's nothing useful for it to do once
+   you're already there. Scoped to a.nav-btn specifically so dropdown
+   items (Charts/Records' sub-views, which all share one href base but
+   differ by ?type=) are never matched/hidden by this — only plain
+   single-destination buttons are. */
+function hideCurrentNavLink(){
+  const here = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  document.querySelectorAll('#navCollapse a.nav-btn[href]').forEach(a => {
+    const target = a.getAttribute('href').split('?')[0].split('#')[0].toLowerCase();
+    if(target && target === here) a.style.display = 'none';
+  });
+}
+
+/* ===================== HTML includes (w3-include-html) =====================
+   Same pattern/implementation as index.html's includeHTML() — see that
+   file's comment for the full rationale. navbar.html is the only
+   include on this page. */
+function includeHTML(callback){
+  const elements = document.querySelectorAll('[w3-include-html]');
+  let pending = elements.length;
+  if(pending === 0){ if(callback) callback(); return; }
+  elements.forEach(el => {
+    const file = el.getAttribute('w3-include-html');
+    fetch(file, {cache:'no-store'})
+      .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
+      .then(html => { el.innerHTML = html; el.removeAttribute('w3-include-html'); })
+      .catch(e => {
+        console.warn('Re-ImaginedWX charts: include failed for', file, '—', e.message);
+        el.innerHTML = '';
+      })
+      .finally(() => { pending--; if(pending === 0 && callback) callback(); });
+  });
+}
+
+// navbar.html has to be in the DOM before #unitSystem/#themeMenu exist
+// to attach listeners to, or sync their state — see includeHTML() above.
+includeHTML(() => {
+  // Defensive: navbar.html failing to load is the one realistic way
+  // #unitSystem wouldn't exist here — includeHTML()'s callback still
+  // fires on a failed include, so this has to handle that case itself
+  // rather than assume the include always succeeded.
+  hideCurrentNavLink();
+  if(!document.getElementById('unitSystem')) return;
+  document.getElementById('unitSystem').addEventListener('change', e=>{
+    currentSystem = e.target.value;
+    renderChart();
+    renderRecordsPanel();
+  });
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      themeMode = el.dataset.themeChoice;
+      localStorage.setItem('bircheswx-theme-mode', themeMode);
+      applyTheme();
+    });
+  });
+  syncThemeNavUI();
+});
+
+/* ===================== Bootstrap ===================== */
+setActiveTimeframeButton();
+renderChart();          // render once immediately with a loading placeholder
+pollChartsJson();
+setInterval(pollChartsJson, CHARTS_POLL_MS);
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>steepleclaydonweather.uk</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
+<style>
+/* ===================== Shared palette/components (from index.html's <head>) =====================
+   Pulled directly from index.html's own inline <style> block, same as
+   locationforecast.html does — see that file's comment for why this is
+   copied by hand rather than linked from style.css (which has drifted
+   from what's actually live; see locationforecast.html / the chat
+   history around that for the full story). If index.html's <head>
+   changes again, this block needs the same update. -->
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ===================== Birch palette mapped onto Bootstrap CSS vars ===================== */
+:root,
+[data-bs-theme="light"]{
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-lime:#C9DA1E;
+  --bw-lime-soft:#2E331A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#2C5478;
+  --bw-instrument-headspace:#495E74;
+  --bw-instrument-border:#E8EEF5;
+  --bw-radius:18px;
+  --bw-radius-sm:10px;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#2E5C84;
+  --bs-body-color:#F2F6FA;
+  --bs-secondary-color:#AFC8DE;
+  --bs-tertiary-bg:#1B3A57;
+  --bs-secondary-bg:#234870;
+  --bs-border-color:#2C5478;
+  --bs-border-color-translucent:#2C5478;
+  --bs-card-bg:#16314D;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+  --bs-warning-rgb:232,163,61;
+  --bs-font-sans-serif:'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-bs-theme="dark"]{
+  --bw-instrument-headspace:#222A2E;
+  --bw-instrument-border:#343E43;
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#343E43;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#14181B;
+  --bs-body-color:#EAEFE9;
+  --bs-secondary-color:#8C9A95;
+  --bs-tertiary-bg:#222A2E;
+  --bs-secondary-bg:#2A3338;
+  --bs-border-color:#343E43;
+  --bs-border-color-translucent:#343E43;
+  --bs-card-bg:#1B2125;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+}
+
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--bs-font-sans-serif);
+  padding-bottom:48px;
+  transition:background-color .25s ease, color .25s ease;
+}
+.font-mono{font-family:'JetBrains Mono','Courier New',monospace;}
+.card{border-radius:var(--bw-radius-sm); box-shadow:var(--bw-shadow);}
+.shadow-card{box-shadow:var(--bw-shadow) !important;}
+
+.nav-scroll-sep{width:1px;height:24px;background:var(--bs-border-color);margin:0 4px;}
+@media (max-width:767.98px){
+  .nav-scroll-sep{width:100%;height:1px;margin:6px 0;}
+}
+
+/* ---------- Birch bark signature motif ---------- */
+.bark-rule{height:14px;width:100%;overflow:hidden;opacity:.55;}
+.bark-rule svg{display:block;width:100%;height:100%;}
+.bark-rule .lenticel{stroke:var(--bw-line);stroke-width:1.5;}
+
+/* ---------- Top bar ---------- */
+.brand-link{color:inherit;text-decoration:none;}
+.brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
+.brand-mark .leaf{color:var(--bw-accent);}
+.brand-sub{font-size:11px;color:var(--bs-secondary-color);letter-spacing:.06em;}
+
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.icon-btn svg{width:18px;height:18px;}
+#themeToggle{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);}
+#themeToggle:hover,#themeToggle:focus,#themeToggle.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+#themeMenu .dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12.5px;}
+#themeMenu .theme-check{width:14px;color:var(--bw-accent);}
+#themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
+.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;white-space:nowrap;}
+.nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+
+.navbar-toggler{border:none;padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;}
+.navbar-toggler[aria-expanded="true"]{display:inline-flex;align-items:center;justify-content:center;}
+.navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
+.navbar-toggler-icon{
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F2F6FA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+@media (max-width:767.98px){
+  .navbar-collapse{margin-top:14px;}
+  .navbar-collapse .dropdown,
+  .navbar-collapse .nav-btn,
+  .navbar-collapse .unit-select{width:100%;}
+  .navbar-collapse .nav-btn{text-align:left;}
+  .navbar-collapse .dropdown-menu{position:static;width:100%;margin-top:4px;}
+}
+@media (orientation:landscape) and (max-width:926px){
+  .navbar-expand-md .navbar-collapse{display:none !important;}
+  .navbar-expand-md .navbar-collapse.show{display:flex !important;}
+  .navbar-expand-md .navbar-toggler{display:block !important;}
+}
+
+/* ---------- Warning banner ---------- */
+.warning-banner{
+  --alert-color: var(--bw-accent);
+  --alert-color-soft: var(--bw-accent-soft);
+  background:linear-gradient(135deg, var(--alert-color-soft), transparent);
+  border:1px solid var(--alert-color);
+  border-left:5px solid var(--alert-color);
+  border-radius:var(--bw-radius-sm);
+  font-size:.84em;
+  line-height:1.3;
+}
+.warning-banner--red{ --alert-color: var(--bw-danger); --alert-color-soft: var(--bw-danger-soft); }
+.warning-banner--yellow{ --alert-color: var(--bw-yellow); --alert-color-soft: var(--bw-yellow-soft); }
+.warning-banner strong{color:var(--alert-color);}
+.warning-banner a{color:var(--bw-sky);text-decoration:underline;font-weight:600;word-break:break-all;}
+.warning-banner ul, .warning-banner ol{margin-bottom:0;padding-left:1.2em;}
+.warning-banner li{margin-bottom:4px;}
+.warning-banner p:last-child{margin-bottom:0;}
+.alert-more-btn{padding:1px 8px;font-size:.78em;line-height:1.4;}
+
+/* ---------- Current conditions: tidy card grid ---------- */
+.cc-grid{
+  display:grid;
+  grid-template-columns: minmax(0,1.4fr) minmax(0,1fr);
+  grid-template-rows:auto auto;
+  gap:16px;
+  align-items:stretch;
+}
+.cc-main{grid-column:1;grid-row:1 / span 2;border-radius:var(--bw-radius);}
+.cc-mini-grid{
+  grid-column:2;grid-row:1;
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+}
+.cc-wind{grid-column:2;grid-row:2;border-radius:var(--bw-radius-sm);}
+@media (max-width:767.98px){
+  .cc-grid{grid-template-columns:1fr;grid-template-rows:auto;}
+  .cc-main, .cc-mini-grid, .cc-wind{grid-column:1;grid-row:auto;}
+}
+.hero-now-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bs-secondary-color);}
+.hero-temp{font-weight:700;font-size:clamp(50px,7.2vw,76px);line-height:1;}
+.hero-icon{width:74px;height:74px;flex-shrink:0;object-fit:contain;}
+.hero-cond{font-size:17px;}
+.cc-stats-row{border-top:1px solid var(--bs-border-color);}
+.cc-stat{display:flex;flex-direction:column;gap:2px;}
+.cc-stat-label{font-size:11.5px;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;}
+.cc-stat-value{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.cc-mini{display:flex;flex-direction:column;justify-content:center;}
+.cc-mini-label{font-size:12px;color:var(--bs-secondary-color);margin-bottom:4px;}
+.cc-mini-value{font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.cc-mini-sub{font-size:11.5px;color:var(--bs-secondary-color);margin-top:2px;}
+.cc-mini-sub b{color:var(--bs-body-color);font-weight:600;}
+.cc-wind .cc-stat-value{font-size:16px;}
+.aqi-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+}
+.aqi-pill--low{background:rgba(91,187,138,.15);color:var(--bw-good);}
+.aqi-pill--mod{background:rgba(214,190,78,.15);color:var(--bw-yellow);}
+.aqi-pill--high{background:rgba(227,107,87,.15);color:var(--bw-danger);}
+.uv-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+}
+.uv-pill--low{background:rgba(91,187,138,.15);color:var(--bw-good);}
+.uv-pill--mod{background:rgba(214,190,78,.15);color:var(--bw-yellow);}
+.uv-pill--high{background:rgba(227,107,87,.15);color:var(--bw-danger);}
+.hero-suntimes{border-top:1px solid var(--bs-border-color);}
+.hero-suntime{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--bs-body-color);}
+.hero-suntime-icon{display:inline-flex;line-height:0;flex-shrink:0;}
+.hero-suntime-icon--sun-rise,.hero-suntime-icon--sun-set{color:var(--bw-accent);}
+.hero-suntime-icon--moon{color:var(--bs-secondary-color);}
+
+/* ---------- Wind direction mini-compass ---------- */
+.wind-compass-mini{position:relative;width:64px;height:64px;flex-shrink:0;}
+.wind-compass-mini-ring{width:100%;height:100%;display:block;}
+.wind-compass-mini-arrow{
+  transform-origin:40px 40px;
+  transition:transform .6s cubic-bezier(.4,0,.2,1);
+}
+.wind-compass-mini-label{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;line-height:1.15;pointer-events:none;
+}
+.wind-compass-mini-label span:first-child{font-size:13px;font-weight:700;}
+.wind-compass-mini-label span:last-child{font-size:9.5px;color:var(--bs-secondary-color);}
+.pollen-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--bw-sky-soft);color:var(--bw-sky);
+  font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+}
+
+/* ---------- Instruments ---------- */
+.instrument-row{align-items:stretch;}
+.instrument-col{flex:1 1 150px;min-width:120px;}
+.instrument-col--narrow{flex:0.72 1 110px;min-width:90px;}
+.instrument-col--narrow.dual{flex:1.25 1 175px;min-width:140px;}
+@media (max-width:767.98px){
+  .instrument-col, .instrument-col--narrow, .instrument-col--narrow.dual{flex:1 1 100%;}
+}
+.instrument-card{display:flex;align-items:center;justify-content:center;padding:18px 8px;}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;}
+.gauge-wrap canvas{width:200px!important;max-width:100%;height:auto!important;aspect-ratio:1/1;display:block;}
+.wind-compass-wrap{width:200px;max-width:100%;aspect-ratio:1/1;}
+.wind-compass-wrap svg{width:100%;height:100%;display:block;}
+.gauge-caption{font-size:11px;color:var(--bs-secondary-color);}
+.gauge-value-big{font-size:20px;font-weight:700;color:var(--bw-good);margin-top:2px;}
+
+/* ---------- Thermometer (SVG, not canvas-gauges — it has no bulb/linear gauge type) ---------- */
+.thermo-svg{width:130px;max-width:100%;height:auto;aspect-ratio:130/200;display:block;}
+#thermoMercury{transition:y .8s ease, height .8s ease, fill .8s ease;}
+#thermoBulb{transition:fill .8s ease;}
+
+/* ---------- Rain gauge (measuring cylinder, same SVG-not-canvas reasoning as the thermometer) ---------- */
+.raingauge-svg{width:130px;max-width:100%;height:auto;aspect-ratio:130/200;display:block;}
+.raingauge-svg.dual{width:220px;aspect-ratio:220/200;}
+#rainFill{transition:y .8s ease, height .8s ease;}
+#rainMeniscus{transition:cy .8s ease;}
+
+/* day strip */
+.day-card{
+  flex:1 1 110px;min-width:90px;padding:14px 8px;text-align:center;
+  cursor:pointer;position:relative;
+}
+.day-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:transparent;}
+.day-card.active::before{background:var(--bw-lime);}
+.day-card .dname{font-size:12.5px;font-weight:700;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;}
+.day-card .dicon{width:38px;height:38px;margin:8px auto 4px;display:block;object-fit:contain;}
+.day-card .dcond{font-size:11.5px;color:var(--bs-secondary-color);height:28px;display:flex;align-items:center;justify-content:center;}
+.day-card .dtemps{font-family:'JetBrains Mono',monospace;font-size:14px;margin-top:4px;}
+.day-card .dtemps .lo{color:var(--bs-secondary-color);}
+.day-card .dwarn{position:absolute;top:6px;right:6px;display:block;}
+.day-card.active{background:var(--bs-tertiary-bg);}
+.day-card.active .dname{color:var(--bw-accent);}
+
+/* ---------- Section labels ---------- */
+.section-label{
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bs-secondary-color);
+  margin:30px 0 12px;display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:"";flex:1;height:1px;background:var(--bs-border-color);}
+
+/* ---------- Metric cards ---------- */
+.metric-card .mlabel{font-size:12px;color:var(--bs-secondary-color);display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.metric-card .mvalue{font-size:26px;font-weight:700;}
+.metric-card .mvalue small{font-size:13px;color:var(--bs-secondary-color);font-weight:400;}
+.metric-card .msub{font-size:12.5px;color:var(--bs-secondary-color);margin-top:4px;}
+.beaufort-chip{display:inline-block;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bw-sky-soft);color:var(--bw-sky);padding:2px 8px;border-radius:10px;}
+.mlabel-icon{width:14px;height:14px;object-fit:contain;}
+
+/* ---------- Temperature feature card (Today's Observations) ---------- */
+.metric-card--feature{padding:18px;}
+.feature-icon{width:30px;height:30px;flex:none;}
+.feature-icon svg{width:100%;height:100%;display:block;}
+.feature-title{font-size:16px;font-weight:700;}
+.feature-current{font-size:34px;font-weight:700;line-height:1;}
+.obs-subcol{border-top:1px solid var(--bs-border-color);padding-top:12px;margin-top:4px;}
+@media (min-width:768px){
+  .obs-subcol{border-top:none;border-left:1px solid var(--bs-border-color);padding-top:0;margin-top:0;padding-left:18px;}
+  .obs-subcol:first-child{border-left:none;padding-left:0;}
+}
+.obs-subcol-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--bs-secondary-color);margin-bottom:8px;}
+.obs-stat-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;padding:3px 0;gap:8px;}
+.obs-stat-row .obs-stat-label{color:var(--bs-secondary-color);}
+.obs-stat-row .obs-stat-value{font-family:'JetBrains Mono',monospace;font-weight:600;text-align:right;}
+.obs-stat-time{font-size:10.5px;color:var(--bs-secondary-color);font-weight:400;margin-left:4px;}
+.obs-trend-rising{color:#E8826F;}
+.obs-trend-falling{color:var(--bw-sky);}
+.obs-trend-steady{color:var(--bs-secondary-color);}
+.obs-footnote{font-size:11px;color:var(--bs-secondary-color);font-style:italic;margin-top:12px;}
+.metric-card--feature-half .obs-stat-row{font-size:14px;}
+.obs-unsupported{font-family:var(--bs-font-sans-serif);font-weight:400;font-style:italic;font-size:12px;color:var(--bs-secondary-color);}
+
+/* ---------- Hourly table ---------- */
+.hourly-title h2{font-size:18px;font-weight:700;margin:0;}
+.hourly-title span{font-size:12px;color:var(--bs-secondary-color);}
+table.hourly{min-width:760px;}
+table.hourly th, table.hourly td{text-align:center;font-size:13px;vertical-align:middle;}
+table.hourly th{font-size:11px;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;font-weight:600;border-bottom:1px solid var(--bs-border-color);}
+table.hourly td.rowlabel, table.hourly th.rowlabel{text-align:left;position:sticky;left:0;background:var(--bs-card-bg);font-weight:700;color:var(--bs-secondary-color);}
+table.hourly img.hicon{width:28px;height:28px;display:block;margin:0 auto 4px;object-fit:contain;}
+
+/* ---------- Hourly temperature track (icons/temps riding an invisible plot line) ---------- */
+table.hourly tr.track-row td.track-cell{
+  position:relative;
+  height:128px;
+  padding:0;
+  vertical-align:top;
+}
+table.hourly .track-marker{
+  position:absolute;
+  top:0;left:0;right:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  transition:top .4s ease;
+}
+table.hourly .track-marker img.hicon{margin-bottom:2px;}
+
+/* ---------- Wind-gust direction badge ---------- */
+.wind-badge{
+  position:relative;
+  width:38px;height:38px;
+  margin:0 auto;
+  display:flex;align-items:center;justify-content:center;
+}
+.wind-badge-ring{
+  position:absolute;inset:0;width:100%;height:100%;
+  transition:transform .4s ease;
+}
+.wind-badge-value{
+  position:relative;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:700;
+  color:var(--wind-col, var(--bs-secondary-color));
+}
+
+/* ---------- Meteocons contrast filter, light theme only ---------- */
+[data-bs-theme="light"] .hero-icon,
+[data-bs-theme="light"] .dicon,
+[data-bs-theme="light"] .hicon,
+[data-bs-theme="light"] .mlabel-icon{
+  filter:
+    drop-shadow(0 0.5px 1px rgba(20,24,27,.40))
+    drop-shadow(0 1.5px 4px rgba(20,24,27,.26))
+    drop-shadow(0 4px 7px rgba(20,24,27,.18));
+}
+
+/* ---------- Meteocons contrast filter, dark theme only ---------- */
+[data-bs-theme="dark"] .hero-icon,
+[data-bs-theme="dark"] .dicon,
+[data-bs-theme="dark"] .hicon,
+[data-bs-theme="dark"] .mlabel-icon{
+  filter:
+    brightness(1.45) contrast(1.2)
+    drop-shadow(0 0 2px rgba(255,255,255,.32))
+    drop-shadow(0 0 8px rgba(255,255,255,.18));
+}
+table.hourly .temp-cell{font-family:'JetBrains Mono',monospace;font-weight:600;}
+table.hourly .rain-cell{color:var(--bw-sky);font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+/* ---------- Sun/pollen/aq strip ---------- */
+.strip-card .slabel{font-size:12px;color:var(--bs-secondary-color);margin-bottom:10px;display:flex;justify-content:space-between;}
+.level-badge{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:20px;}
+.level-dot{width:10px;height:10px;border-radius:50%;}
+.level-low{background:var(--bw-good);} .level-mod{background:var(--bw-accent);} .level-high{background:var(--bw-danger);}
+.strip-detail{font-size:13px;color:var(--bs-secondary-color);margin-top:6px;}
+.species-breakdown{margin-top:12px;padding-top:10px;border-top:1px solid var(--bs-border-color);display:flex;flex-direction:column;gap:6px;}
+.species-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;}
+.species-row .species-name{color:var(--bs-secondary-color);display:flex;align-items:center;gap:6px;}
+.species-row .species-name .level-dot{width:7px;height:7px;flex:none;}
+.species-row .species-value{font-family:'JetBrains Mono',monospace;font-weight:600;text-align:right;}
+
+.unit-select{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.03em;
+  color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bs-body-color);
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23E8EEF5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+.unit-select:focus{color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bw-accent);box-shadow:0 0 0 .25rem rgba(232,163,61,.25);}
+.unit-select option{color:#000;background-color:#fff;}
+
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+
+.live-status-wrap{position:relative;display:inline-flex;width:8px;height:8px;flex-shrink:0;}
+#liveStatusDot{width:8px;height:8px;border-radius:50%;display:block;position:relative;z-index:1;}
+.live-status-ripple{
+  position:absolute;top:50%;left:50%;
+  width:8px;height:8px;margin:-4px 0 0 -4px;
+  border-radius:50%;
+  background:radial-gradient(circle, var(--bw-good) 0%, var(--bw-good) 30%, transparent 72%);
+  opacity:0;pointer-events:none;
+  filter:blur(.5px);
+}
+.live-status-ripple.ping{ animation: dot-ripple 1.3s ease-out; }
+@keyframes dot-ripple{
+  0%   { width:8px;  height:8px;  margin:-4px 0 0 -4px;   opacity:.55; }
+  100% { width:72px; height:72px; margin:-36px 0 0 -36px; opacity:0; }
+}
+</style>
+<style>
+/* ===================== Gallery UI (new to this page) ===================== */
+.gallery-empty{max-width:640px;}
+.gallery-empty .card{padding:28px 24px;}
+.gallery-empty h2{font-size:18px;font-weight:700;margin-bottom:8px;}
+.gallery-empty p{color:var(--bs-secondary-color);font-size:14px;}
+.gallery-help{margin-top:18px;}
+.gallery-help summary{cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--bw-sky);}
+.gallery-help pre{
+  background:var(--bs-tertiary-bg);border:1px solid var(--bs-border-color);border-radius:var(--bw-radius-sm);
+  padding:14px 16px;font-size:12px;line-height:1.5;margin-top:10px;overflow-x:auto;white-space:pre;
+}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:18px;margin-bottom:8px;}
+.gallery-card{display:flex;flex-direction:column;overflow:hidden;}
+.gallery-frame-wrap{position:relative;width:100%;background:var(--bs-tertiary-bg);overflow:hidden;border-radius:var(--bw-radius-sm) var(--bw-radius-sm) 0 0;}
+.gallery-frame-wrap iframe{display:block;width:100%;height:100%;border:0;position:absolute;inset:0;}
+.gallery-card-body{padding:12px 14px 14px;}
+.gallery-card-title{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px;}
+.gallery-card-notes{font-size:12.5px;color:var(--bs-secondary-color);margin-top:4px;}
+.gallery-cat-icon{font-size:15px;line-height:1;flex-shrink:0;}
+.gallery-skip-note{font-size:11.5px;color:var(--bs-secondary-color);font-style:italic;margin-top:-4px;margin-bottom:14px;}
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR — shared navbar.html include, same as records.html/charts.html/
+     climate.html/locationforecast.html (not index.html — see navbar.html's
+     own header comment). -->
+<div w3-include-html="navbar.html"></div>
+
+<div class="container-xl mt-3">
+
+  <h1 class="fw-bold fs-2 mb-1">Gallery</h1>
+  <p class="mb-4" style="color:var(--bs-secondary-color);max-width:640px;">
+    Maps, webcams, time-lapses, and anything else worth embedding —
+    configured by whoever runs this station, not hardcoded into the page.
+    See below if nothing's showing up yet.
+  </p>
+
+  <div id="galleryContent"><!-- populated by JS --></div>
+
+  <div id="galleryEmptyState" class="gallery-empty" style="display:none;">
+    <div class="card">
+      <h2>No gallery items configured yet</h2>
+      <p>This page reads <code>jsondata/gallery.json</code>, which is generated from entries in <code>weewx.conf</code> — there aren't any yet (or the file hasn't been generated).</p>
+      <details class="gallery-help">
+        <summary>How to add one (weewx.conf + skin.conf)</summary>
+        <p class="mt-2 mb-1" style="font-size:13px;">Add numbered <code>gallery_item&lt;N&gt;_*</code> keys under this skin's <code>[[[Extras]]]</code> in <code>weewx.conf</code>:</p>
+<pre>[StdReport]
+    [[CommunityWeather]]          &lt;- your skin's stanza name, not literally this
+        skin = community_weather
+        [[[Extras]]]
+            gallery_item1_title    = Live Radar
+            gallery_item1_category = map
+            gallery_item1_src      = https://example.com/embed/radar
+            gallery_item1_aspect   = 4:3
+            gallery_item1_notes    = Refreshes every 5 minutes
+
+            gallery_item2_title    = Garden Webcam
+            gallery_item2_category = webcam
+            gallery_item2_src      = https://example.com/embed/cam1
+            gallery_item2_aspect   = 16:9</pre>
+        <p class="mt-2 mb-1" style="font-size:13px;"><code>category</code> is one of <code>map</code> / <code>webcam</code> / <code>timelapse</code> — anything else (or left blank) lands under "Other". <code>aspect</code> and <code>notes</code> are optional (aspect defaults to 16:9).</p>
+        <p class="mt-2 mb-0" style="font-size:13px;">Then make sure <code>gallery.json.tmpl</code> (shipped alongside this page) is being generated by <code>skin.conf</code>'s <code>[CheetahGenerator]</code> section — mirror whatever stanza this skin already uses for its other <code>*_json.tmpl</code> files (e.g. <code>charts_json.tmpl</code>) so it lands at <code>jsondata/gallery.json</code>. See <code>gallery.json.tmpl</code>'s own header comment for the full, exact instructions and a worked example.</p>
+      </details>
+    </div>
+  </div>
+
+</div>
+
+<footer class="container-xl mt-5 pt-3 border-top d-flex justify-content-between flex-wrap gap-2">
+  <span>Sǣl</span>
+  <span>Gallery items: configured via weewx.conf</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script>
+/* =====================================================================
+   gallery.html — admin-configured maps / webcams / time-lapses / misc,
+   each rendered as an embedded iframe.
+
+   Data source: jsondata/gallery.json, generated by gallery.json.tmpl
+   (shipped alongside this page) from numbered gallery_item<N>_* keys
+   under this skin's [[[Extras]]] in weewx.conf — see that template's
+   own header comment for the full weewx.conf/skin.conf wiring, and the
+   "How to add one" panel below the gallery (shown when there's nothing
+   to display yet) for the short version.
+
+   Security note: unlike a typical "embed any URL" page, the iframe
+   sources here come from the station admin's own weewx.conf, not from
+   any visitor input — there's no untrusted-user-input path into this
+   list. That's why these iframes aren't sandboxed: a sandbox attribute
+   tight enough to matter would also break the scripts most real map/
+   webcam embeds need to function. If this page ever grows a way for
+   *visitors* (rather than the admin) to add a URL, that assumption no
+   longer holds and this needs revisiting.
+   ===================================================================== */
+
+const GALLERY_JSON_URL = './jsondata/gallery.json';
+const GALLERY_POLL_MS = 10 * 60 * 1000; // matches forecast.js's poll cadence — admin edits are rare, not real-time
+
+const CATEGORY_META = {
+  map:       {label:'Maps',         icon:'🗺️', order:0},
+  webcam:    {label:'Webcams',      icon:'📷', order:1},
+  timelapse: {label:'Time-lapses',  icon:'🎬', order:2},
+  misc:      {label:'Other',        icon:'🖼️', order:3},
+};
+function categoryMeta(cat){ return CATEGORY_META[cat] || CATEGORY_META.misc; }
+
+function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// "16:9" / "4:3" / "1:1" → a CSS aspect-ratio value; anything malformed
+// falls back to 16:9 rather than producing a broken/zero-height frame.
+function parseAspect(a){
+  if(typeof a === 'string' && /^\d+(\.\d+)?:\d+(\.\d+)?$/.test(a.trim())){
+    return a.trim().replace(':','/');
+  }
+  return '16/9';
+}
+
+let skippedCount = 0;
+
+function sanitizeItems(raw){
+  skippedCount = 0;
+  if(!Array.isArray(raw)) return [];
+  const out = [];
+  raw.forEach(item => {
+    if(!item || !item.title || !item.src){ skippedCount++; return; }
+    let url;
+    try{ url = new URL(item.src, window.location.href); }catch(e){ skippedCount++; return; }
+    if(url.protocol !== 'https:' && url.protocol !== 'http:'){ skippedCount++; return; }
+    out.push({
+      id: item.id,
+      title: String(item.title),
+      category: (item.category || 'misc').toLowerCase(),
+      src: url.href,
+      aspect: parseAspect(item.aspect),
+      notes: item.notes ? String(item.notes) : '',
+    });
+  });
+  return out;
+}
+
+function groupByCategory(items){
+  const groups = {};
+  items.forEach(item => {
+    const key = CATEGORY_META[item.category] ? item.category : 'misc';
+    (groups[key] = groups[key] || []).push(item);
+  });
+  return Object.entries(groups).sort((a,b) => categoryMeta(a[0]).order - categoryMeta(b[0]).order);
+}
+
+function renderGallery(items){
+  const wrap = document.getElementById('galleryContent');
+  const emptyState = document.getElementById('galleryEmptyState');
+  if(!items.length){
+    wrap.innerHTML = '';
+    emptyState.style.display = '';
+    return;
+  }
+  emptyState.style.display = 'none';
+  const groups = groupByCategory(items);
+  wrap.innerHTML = groups.map(([catKey, catItems]) => {
+    const meta = categoryMeta(catKey);
+    const cards = catItems.map(item => `
+      <div class="card gallery-card h-100">
+        <div class="gallery-frame-wrap" style="aspect-ratio:${item.aspect};">
+          <iframe src="${item.src}" title="${escapeHtml(item.title)}" loading="lazy" allow="fullscreen" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="gallery-card-body">
+          <div class="gallery-card-title">${escapeHtml(item.title)}</div>
+          ${item.notes ? `<div class="gallery-card-notes">${escapeHtml(item.notes)}</div>` : ''}
+        </div>
+      </div>`).join('');
+    return `
+      <div class="section-label">${meta.icon} ${meta.label}</div>
+      <div class="gallery-grid">${cards}</div>`;
+  }).join('');
+
+  if(skippedCount > 0){
+    wrap.insertAdjacentHTML('afterbegin', `<div class="gallery-skip-note">${skippedCount} gallery ${skippedCount===1?'entry':'entries'} skipped — missing a title/src, or an unsupported URL scheme. Check jsondata/gallery.json.</div>`);
+  }
+}
+
+async function pollGallery(){
+  try{
+    const res = await fetch(GALLERY_JSON_URL, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const raw = await res.json();
+    renderGallery(sanitizeItems(raw));
+  }catch(e){
+    console.warn('Sǣl gallery: fetch failed —', e.message);
+    // Leave whatever's already rendered in place on a transient failure;
+    // only fall back to the empty/help state if nothing has ever loaded.
+    if(!document.getElementById('galleryContent').innerHTML.trim()){
+      document.getElementById('galleryEmptyState').style.display = '';
+    }
+  }
+}
+
+pollGallery();
+setInterval(pollGallery, GALLERY_POLL_MS);
+
+/* ===================== Hide the current page's own nav link =====================
+   Once navbar.html has loaded, hide whichever top-level nav button
+   points at the page we're already on (e.g. no "Climate" button while
+   actually on climate.html) — there's nothing useful for it to do once
+   you're already there. Scoped to a.nav-btn specifically so dropdown
+   items (Charts/Records' sub-views, which all share one href base but
+   differ by ?type=) are never matched/hidden by this — only plain
+   single-destination buttons are. */
+function hideCurrentNavLink(){
+  const here = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  document.querySelectorAll('#navCollapse a.nav-btn[href]').forEach(a => {
+    const target = a.getAttribute('href').split('?')[0].split('#')[0].toLowerCase();
+    if(target && target === here) a.style.display = 'none';
+  });
+}
+
+/* ===================== HTML includes (w3-include-html) =====================
+   Same pattern/implementation as index.html's includeHTML() — see that
+   file's comment for the full rationale. navbar.html is the only
+   include on this page. */
+function includeHTML(callback){
+  const elements = document.querySelectorAll('[w3-include-html]');
+  let pending = elements.length;
+  if(pending === 0){ if(callback) callback(); return; }
+  elements.forEach(el => {
+    const file = el.getAttribute('w3-include-html');
+    fetch(file, {cache:'no-store'})
+      .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
+      .then(html => { el.innerHTML = html; el.removeAttribute('w3-include-html'); })
+      .catch(e => {
+        console.warn('Sǣl gallery: include failed for', file, '—', e.message);
+        el.innerHTML = '';
+      })
+      .finally(() => { pending--; if(pending === 0 && callback) callback(); });
+  });
+}
+
+/* ===================== Theme: Auto / Light / Dark =====================
+   Identical pattern to locationforecast.html/climate.html. */
+const root = document.documentElement;
+let themeMode = localStorage.getItem('bircheswx-theme-mode') || 'auto';
+function resolveTheme(){
+  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+function applyTheme(){
+  root.setAttribute('data-bs-theme', resolveTheme());
+  syncThemeNavUI();
+}
+function syncThemeNavUI(){
+  const sunIcon = document.getElementById('themeIconSun');
+  if(!sunIcon) return;
+  const resolved = resolveTheme();
+  sunIcon.style.display = resolved==='light' ? '' : 'none';
+  document.getElementById('themeIconMoon').style.display = resolved==='dark' ? '' : 'none';
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.classList.toggle('active-theme', el.dataset.themeChoice===themeMode);
+  });
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+  if(themeMode==='auto') applyTheme();
+});
+applyTheme();
+
+// navbar.html has to be in the DOM before #themeMenu exists to attach
+// listeners to — see includeHTML() above. This page has no use for
+// #unitSystem (nothing here is a unit), so unlike the other pages it
+// doesn't wire a change listener for it — the selector still renders
+// (it's part of the shared include), it's just inert here.
+includeHTML(() => {
+  hideCurrentNavLink();
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      themeMode = el.dataset.themeChoice;
+      localStorage.setItem('bircheswx-theme-mode', themeMode);
+      applyTheme();
+    });
+  });
+  syncThemeNavUI();
+});
+</script>
+</body>
+</html>
