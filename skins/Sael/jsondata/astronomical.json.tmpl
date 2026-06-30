@@ -1,0 +1,297 @@
+## astronomical.json.tmpl for the New Belchertown WeeWX skin
+##
+## Generates real astronomical data as JSON for the BirchesWX sun/moon
+## card, using the EXACT SAME computation as this skin's own almanac
+## diagram (build_almanac_diagram_payload in user.new_belchertown) —
+## not a separate or approximated calculation. That function already
+## produces, per body (sun/moon): current alt/az, rise/transit/set
+## epochs, a 24h track of (minute_of_day, altitude) samples every 30
+## minutes, and a "transit-centering" x_offset that shifts the body's
+## OWN track so its OWN daily peak (transit) sits at the middle of the
+## diagram — which is what makes a single shared center line meaningful
+## for both curves even though the sun and moon transit at different
+## clock times. Earlier drafts of this file approximated all of this in
+## JavaScript and never quite matched the skin's real diagram; this
+## version hands the front-end the exact same sampled data instead.
+##
+## This deliberately does NOT use #errorCatcher Echo — an inline error
+## string substituted into JSON output would break JSON parsing for
+## every field after it. Every risky access is wrapped in its own
+## #try/#except instead, falling back to Python None (rendered as JSON
+## null) so one missing field can't take down the whole file.
+#from user.new_belchertown import build_almanac_diagram_payload
+#import math
+#set global $synodic_month_days = 29.530588853
+
+#def jstr($v)
+#if $v is None or $v == "" or $v == "None"
+null#slurp
+#else
+"$v"#slurp
+#end if
+#end def
+
+#def jnum($v)
+#if $v is None or $v == "" or $v == "None"
+null#slurp
+#else
+$v#slurp
+#end if
+#end def
+
+## track_points is already a clean "minute,alt|minute,alt|..." string
+## (digits/commas/pipes/minus/dots only) — safe to quote directly with
+## no escaping needed.
+#def jraw($v)
+#if $v is None or $v == ""
+""#slurp
+#else
+"$v"#slurp
+#end if
+#end def
+
+#set $diagram = {}
+#try
+#set $diagram = $build_almanac_diagram_payload($almanac, $current.dateTime.raw)
+#except
+#set $diagram = {}
+#end try
+
+## ---- Sun/moon rise/set/transit as plain HH:MM (same fields celestial.inc displays) ----
+#set $sun_rise_str = None
+#set $sun_set_str = None
+#set $sun_transit_str = None
+#try
+#set $sun_rise_str = $almanac.sun.rise.format("%H:%M")
+#except
+#pass
+#end try
+#try
+#set $sun_set_str = $almanac.sun.set.format("%H:%M")
+#except
+#pass
+#end try
+#try
+#set $sun_transit_str = $almanac.sun.transit.format("%H:%M")
+#except
+#pass
+#end try
+#set $moon_rise_str = None
+#set $moon_set_str = None
+#set $moon_transit_str = None
+#try
+#set $moon_rise_str = $almanac.moon.rise.format("%H:%M")
+#except
+#pass
+#end try
+#try
+#set $moon_set_str = $almanac.moon.set.format("%H:%M")
+#except
+#pass
+#end try
+#try
+#set $moon_transit_str = $almanac.moon.transit.format("%H:%M")
+#except
+#pass
+#end try
+
+## ---- Moon phase name / fullness / age (same fields celestial.inc displays) ----
+## ---- Moon's real visual tilt (bright-limb position angle, corrected for
+## parallactic angle so it's relative to the observer's own zenith rather
+## than the celestial pole) — genuine positional astronomy, not a
+## stylistic constant. Two standard, independently-documented formulas:
+##   chi = position angle of the bright limb's midpoint, measured from
+##         the celestial north point, increasing through east
+##         (Meeus, "Astronomical Algorithms" ch. 48)
+##   q   = parallactic angle — converts chi from "relative to the
+##         celestial pole" to "relative to the observer's zenith"
+##         (standard spherical-astronomy formula; q is exactly 0 or 180
+##         at the moment of meridian transit, which is how this was
+##         sanity-checked)
+## The result (chi - q) is the angle, measured from celestial north
+## through east, at which the bright limb's midpoint sits AS SEEN BY
+## THIS OBSERVER right now.
+#set $moon_tilt_deg = None
+#set $sun_ra_display = None
+#set $sun_dec_display = None
+#set $moon_ra_display = None
+#set $moon_dec_display = None
+#try
+#set $sun_ra_deg = float($almanac.sun.ra)
+#set $sun_dec_deg = float($almanac.sun.dec)
+#set $moon_ra_deg = float($almanac.moon.ra)
+#set $moon_dec_deg = float($almanac.moon.dec)
+#set $sun_ra_display = round($sun_ra_deg, 1)
+#set $sun_dec_display = round($sun_dec_deg, 1)
+#set $moon_ra_display = round($moon_ra_deg, 1)
+#set $moon_dec_display = round($moon_dec_deg, 1)
+#set $obs_lat_deg = float($station.latitude_f)
+#set $obs_lon_deg = float($station.longitude_f)
+#set $jd_now = (float($current.dateTime.raw) / 86400.0) + 2440587.5
+#set $t_jc = ($jd_now - 2451545.0) / 36525.0
+#set $gmst_deg = 280.46061837 + (360.98564736629*($jd_now-2451545.0)) + (0.000387933*$t_jc*$t_jc) - (($t_jc**3)/38710000.0)
+#set $gmst_deg = $gmst_deg % 360.0
+#set $lst_deg = ($gmst_deg + $obs_lon_deg) % 360.0
+#set $hour_angle_deg = ($lst_deg - $moon_ra_deg) % 360.0
+#if $hour_angle_deg > 180.0
+#set $hour_angle_deg = $hour_angle_deg - 360.0
+#end if
+#set $h_rad = math.radians($hour_angle_deg)
+#set $moon_dec_rad = math.radians($moon_dec_deg)
+#set $lat_rad = math.radians($obs_lat_deg)
+#set $q_rad = math.atan2(math.sin($h_rad), (math.cos($moon_dec_rad)*math.tan($lat_rad)) - (math.sin($moon_dec_rad)*math.cos($h_rad)))
+#set $sun_dec_rad = math.radians($sun_dec_deg)
+#set $delta_ra_rad = math.radians($sun_ra_deg - $moon_ra_deg)
+#set $chi_rad = math.atan2(math.cos($sun_dec_rad)*math.sin($delta_ra_rad), (math.sin($sun_dec_rad)*math.cos($moon_dec_rad)) - (math.cos($sun_dec_rad)*math.sin($moon_dec_rad)*math.cos($delta_ra_rad)))
+#set $moon_tilt_deg = math.degrees($chi_rad - $q_rad)
+#set $moon_tilt_deg = (($moon_tilt_deg + 180.0) % 360.0) - 180.0
+#set $moon_tilt_deg = round($moon_tilt_deg, 1)
+#except
+#pass
+#end try
+
+#set $moon_phase_name = None
+#set $moon_fullness_pct = None
+#try
+#set $moon_phase_name = str($almanac.moon_phase)
+#set $moon_fullness_pct = round(float($almanac.moon_fullness), 1)
+#except
+#pass
+#end try
+
+#set $moon_age_days = None
+#try
+#set $next_new_moon_raw = $almanac.next_new_moon.raw
+#set $now_raw = $current.dateTime.raw
+#set $days_to_next_new = (float($next_new_moon_raw) - float($now_raw)) / 86400.0
+#set $moon_age_days = $synodic_month_days - $days_to_next_new
+#while $moon_age_days < 0
+#set $moon_age_days = $moon_age_days + $synodic_month_days
+#end while
+#while $moon_age_days >= $synodic_month_days
+#set $moon_age_days = $moon_age_days - $synodic_month_days
+#end while
+#set $moon_age_days = round($moon_age_days, 2)
+#except
+#pass
+#end try
+
+#set $next_new_moon_epoch = None
+#set $next_full_moon_epoch = None
+#try
+#set $next_new_moon_epoch = $almanac.next_new_moon.raw
+#except
+#pass
+#end try
+#try
+#set $next_full_moon_epoch = $almanac.next_full_moon.raw
+#except
+#pass
+#end try
+
+#set $next_equinox_epoch = None
+#set $next_solstice_epoch = None
+#try
+#set $next_equinox_epoch = $almanac.next_equinox.raw
+#except
+#pass
+#end try
+#try
+#set $next_solstice_epoch = $almanac.next_solstice.raw
+#except
+#pass
+#end try
+
+## ---- Ephemeris provider label, best-effort: WeeWX 5 can run its almanac
+## on either Skyfield or PyEphem depending on what's installed. There's no
+## direct "which one is $almanac using" tag, so this checks which package
+## is actually importable as a reasonable proxy. ----
+#set $almanac_source = "PyEphem"
+#try
+#import skyfield
+#set $almanac_source = "Skyfield"
+#except
+#pass
+#end try
+
+## ---- Civil twilight: same $almanac(horizon=-6).sun(use_center=1) pattern as celestial.inc ----
+#set $civil_dawn_str = None
+#set $civil_dusk_str = None
+#try
+#set $civil_dawn_str = $almanac(horizon=-6).sun(use_center=1).rise.format("%H:%M")
+#except
+#pass
+#end try
+#try
+#set $civil_dusk_str = $almanac(horizon=-6).sun(use_center=1).set.format("%H:%M")
+#except
+#pass
+#end try
+
+## ---- Daylight today vs. yesterday: same logic as almanac_daylight_data.inc's
+## fallback path (plain sunset-minus-sunrise; the $almanac.sun.visible tag this
+## include prefers when present is an optional pyephem extra not guaranteed to
+## exist, so this mirrors the universally-available branch). ----
+#set $daylight_today_seconds = None
+#set $daylight_yesterday_seconds = None
+#set $daylight_delta_seconds = None
+#try
+#set $sr = $almanac.sun.rise.raw
+#set $ss = $almanac.sun.set.raw
+#set $daylight_today_seconds = int($ss) - int($sr)
+#set $yesterday_ts = $current.dateTime.raw - 86400
+#set $y_sr = $almanac(almanac_time=$yesterday_ts).sun.rise.raw
+#set $y_ss = $almanac(almanac_time=$yesterday_ts).sun.set.raw
+#set $daylight_yesterday_seconds = int($y_ss) - int($y_sr)
+#set $daylight_delta_seconds = $daylight_today_seconds - $daylight_yesterday_seconds
+#except
+#pass
+#end try
+
+{
+  "generated_at_epoch": $jnum($current.dateTime.raw),
+  "current_minute_of_day": $jnum($diagram.get("diagram_current_x_attr")),
+  "diagram_centering_mode": $jstr($diagram.get("diagram_centering_mode_attr")),
+  "sun": {
+    "rise": $jstr($sun_rise_str),
+    "set": $jstr($sun_set_str),
+    "transit": $jstr($sun_transit_str),
+    "az": $jnum($diagram.get("sun_az_attr")),
+    "alt": $jnum($diagram.get("sun_alt_attr")),
+    "ra": $jnum($sun_ra_display),
+    "dec": $jnum($sun_dec_display),
+    "rise_epoch": $jnum($diagram.get("sun_rise_epoch_attr")),
+    "set_epoch": $jnum($diagram.get("sun_set_epoch_attr")),
+    "transit_alt": $jnum($diagram.get("sun_transit_alt_attr")),
+    "x_offset": $jnum($diagram.get("sun_x_offset_attr")),
+    "track_points": $jraw($diagram.get("sun_track_points_attr"))
+  },
+  "moon": {
+    "rise": $jstr($moon_rise_str),
+    "set": $jstr($moon_set_str),
+    "transit": $jstr($moon_transit_str),
+    "az": $jnum($diagram.get("moon_az_attr")),
+    "alt": $jnum($diagram.get("moon_alt_attr")),
+    "ra": $jnum($moon_ra_display),
+    "dec": $jnum($moon_dec_display),
+    "rise_epoch": $jnum($diagram.get("moon_rise_epoch_attr")),
+    "set_epoch": $jnum($diagram.get("moon_set_epoch_attr")),
+    "transit_alt": $jnum($diagram.get("moon_transit_alt_attr")),
+    "x_offset": $jnum($diagram.get("moon_x_offset_attr")),
+    "track_points": $jraw($diagram.get("moon_track_points_attr")),
+    "phase_name": $jstr($moon_phase_name),
+    "fullness_pct": $jnum($moon_fullness_pct),
+    "age_days": $jnum($moon_age_days),
+    "tilt_deg": $jnum($moon_tilt_deg)
+  },
+  "civil_twilight_begin": $jstr($civil_dawn_str),
+  "civil_twilight_end": $jstr($civil_dusk_str),
+  "daylight_today_seconds": $jnum($daylight_today_seconds),
+  "daylight_yesterday_seconds": $jnum($daylight_yesterday_seconds),
+  "daylight_delta_seconds": $jnum($daylight_delta_seconds),
+  "next_new_moon_epoch": $jnum($next_new_moon_epoch),
+  "next_full_moon_epoch": $jnum($next_full_moon_epoch),
+  "next_equinox_epoch": $jnum($next_equinox_epoch),
+  "next_solstice_epoch": $jnum($next_solstice_epoch),
+  "data_source": $jstr($almanac_source)
+}

@@ -1,0 +1,137 @@
+#errorCatcher Echo
+#encoding UTF-8
+#import math
+#from math import radians as rad, degrees as deg
+#import time
+#import datetime
+#from datetime import date, timedelta
+#from zoneinfo import ZoneInfo
+#from skyfield.api import load
+#from skyfield.framelib import ecliptic_frame
+#set $now = datetime.datetime.now(datetime.timezone.utc)
+#set $ts = load.timescale()
+#set $t = ts.utc(now)
+#set $td = timedelta(minutes=1)
+#set $tx = ts.utc(now) - td
+#set $eph = load('de421.bsp')
+#set $sun, $moon, $earth = eph['sun'], eph['moon'], eph['earth']
+#set $e = earth.at(t)
+#set $p1 = moon.at(t)
+#set $p2 = moon.at(tx)
+#set $mdt = (p2 - p1).distance().km ## Distance traveled by the moon in 1 minute (km)
+#set $s = e.observe(sun).apparent()
+#set $m = e.observe(moon).apparent()
+#set $_, slon, _ = s.frame_latlon(ecliptic_frame)
+#set $_, mlon, _ = m.frame_latlon(ecliptic_frame)
+#set $moon_ecliptic_angle = (mlon.degrees - slon.degrees) % 360.0
+#set $moonDays = ($current.dateTime.raw - $almanac.previous_new_moon.raw)/86400
+#set $now = datetime.datetime.now()
+#set $nowHour = $now.hour
+#set $sunrise_hour = datetime.datetime.fromtimestamp($almanac.sunrise.raw).strftime('%H')
+#set $sunset_hour = datetime.datetime.fromtimestamp($almanac.sunset.raw).strftime('%H')
+## Calculate length of daylight
+#set $daylength = time.strftime('%H:%M', time.gmtime(int($almanac.sun.set.raw - $almanac.sun.rise.raw)))
+## Truncate station uptime decimals
+#set $stationuptime = $alltime.outTemp.firsttime
+#set almost_end = $rainyear.end.raw - 1
+#set almost_end_tt = $time.localtime($almost_end)
+#if int($sunrise_hour) <= int($nowHour) and int($nowHour) < int($sunset_hour)
+#set $bodyTheme = "light"
+#else
+#set $bodyTheme = "dark"
+#end if
+#import weewx.almanac
+## get a list of the names of the installed almanac extensions
+#set $almanac_names = [$alm.__class__.__name__ for $alm in $weewx.almanac.almanacs]
+## check if the Skyfield almanac extension is available
+#set $skyfield_almanac_available = 'SkyfieldAlmanacType' in $almanac_names and $almanac.hasExtras
+#if $skyfield_almanac_available
+#set $sun_altitude = $almanac.sun.alt
+#if $sun_altitude < 0
+#set $sun_None="<i>(Always down)</i>"
+#set $daylight_str = "00:00"
+#else
+#set $sun_None="<i>(Always up)</i>"
+#set $daylight_str = "24:00"
+#end if
+#set $sunrise_ts = $almanac.sun.rise.raw
+#set $sunset_ts = $almanac.sun.set.raw
+#if $sunrise_ts and $sunset_ts
+#set $now = $current.dateTime.raw
+#set $today_daylight = $sunset_ts - $sunrise_ts
+#set $seconds = $today_daylight
+#set $hours = $seconds //3600
+#set $seconds %= 3600
+#set $minutes = $seconds//60
+#set $seconds %= 60
+#set $daylight_str = "%d hours, %d minutes, %d seconds" % ($hours, $minutes, $seconds)
+#set $yesterday = $now - 24*3600
+#set $yesterday_daylight = $almanac($almanac_time=$yesterday).sun.set.raw - $almanac($almanac_time=$yesterday).sun.rise.raw
+#set $difference = $today_daylight - $yesterday_daylight
+#end if
+#if $difference
+#set $delta = abs($difference)
+#set $amt_str = "%s%d seconds" % (str(int($delta) // 60) + ' minutes, ' if ($delta // 60) > 0 else '', $delta % 60 if ($delta // 60) > 0 else $delta)
+#end if
+#if $difference > 0
+#set $delta_str = "%s more than yesterday" % $amt_str
+#else
+#set $delta_str = "%s less than yesterday" % $amt_str
+#end if
+	{
+		"moon_distance_traveled": $mdt,
+		"parallactic_angle": $almanac.moon.parallactic_angle.format(format_string="%.6f", add_label=False), 		 
+		"moon_ecliptic_angle": $moon_ecliptic_angle,
+		"ecliptic_angle": 23.435917160262,
+		"moon_distance": $almanac.moon.astro_dist.format(format_string="%.6f", add_label=False),
+		"sun_distance": $almanac.sun.astro_dist.format(format_string="%.6f", add_label=False),
+		"moon_azimuth": $almanac.moon.az,
+		"moon_altitude": $almanac.moon.alt,
+		"sun_azimuth": $almanac.sun.az,
+		"sun_altitude": $almanac.sun.alt,
+		"sunrise": "$almanac.sun.rise.format(format_string="%H:%M:%S")",
+		"sunset": "$almanac.sun.set.format(format_string="%H:%M:%S")",
+		"sunrise_date": "$almanac.sun.rise.format("%b %d %Y %H:%M:%S")",
+		"sunset_date": "$almanac.sun.set.format("%b %d %Y %H:%M:%S")",
+		"sun_right_ascension": $almanac.sun.ra,
+		"sun_geo_right_ascension": $almanac.sun.g_ra,
+		"sun_declination": $almanac.sun.dec,
+		"sun_geo_declination": $almanac.sun.g_dec,
+		"moon_right_ascension": $almanac.moon.ra,
+		"moon_geo_right_ascension": $almanac.moon.g_ra,
+		"moon_declination": $almanac.moon.dec,
+		"moon_geo_declination": $almanac.moon.g_dec,
+		"next_vernal_equinox": "$almanac.next_vernal_equinox",
+		"next_autumnal_equinox": "$almanac.next_autumnal_equinox",
+		"next_equinox": "$almanac.next_equinox",
+		"next_solstice": "$almanac.next_solstice",
+		"sidereal_time": $almanac.sidereal_time,
+		"civil_twilight_begin": "$almanac(horizon=-6).sun(use_center=1).rise.format(format_string="%H:%M")",
+		"civil_twilight_end": "$almanac(horizon=-6).sun(use_center=1).set.format(format_string="%H:%M")",
+		"nautical_twilight_begin": "$almanac(horizon=-12).sun(use_center=1).rise.format(format_string="%H:%M")",
+		"nautical_twilight_end": "$almanac(horizon=-12).sun(use_center=1).set.format(format_string="%H:%M")",
+		"stronomical_twilight_begin": "$almanac(horizon=-18).sun(use_center=1).rise.format(format_string="%H:%M")",
+		"astronomical_twilight_end": "$almanac(horizon=-18).sun(use_center=1).set.format(format_string="%H:%M")",
+		"sun_meridian_transit": "$almanac.sun.transit.format(format_string="%H:%M")",
+		"moon_meridian_transit": "$almanac.moon.transit.format(format_string="%H:%M")",
+		"moonPhase": "$almanac.moon_phase",
+		"moon_age": $moonDays,
+		"hour_sun": $($almanac.sun.ha % 360.0),
+		"hour_moon": $($almanac.moon.ha % 360.0),
+		"luminance": $almanac.moon.moon_fullness,
+		"fullmoon": "$almanac.next_full_moon.format("%d %b %H:%M")",
+		"newmoon": "$almanac.next_new_moon.format("%d %b %H:%M")",
+		"daylight": "$daylength",
+		"moonrise": "$almanac.moon.rise.format(format_string="%H:%M")",
+		"moonset": "$almanac.moon.set.format(format_string="%H:%M")",
+		"mercury_hlongitude": $almanac.mercury.hlongitude.raw,
+		"venus_hlongitude": $almanac.venus.hlongitude.raw,
+		"earth_hlongitude": $almanac.earth.hlongitude.raw,
+		"mars_hlongitude": $almanac.mars.hlongitude.raw,
+		"jupiter_hlongitude": $almanac.jupiter.hlongitude.raw,
+		"saturn_hlongitude": $almanac.saturn.hlongitude.raw,
+		"uranus_hlongitude": $almanac.uranus.hlongitude.raw,
+		"neptune_hlongitude": $almanac.neptune.hlongitude.raw,
+		"pluto_hlongitude": $almanac.pluto.hlongitude.raw
+		}
+#end if

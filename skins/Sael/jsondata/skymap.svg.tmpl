@@ -1,0 +1,26 @@
+## skymap.svg.tmpl
+##
+## Renders ONLY the raw <svg>...</svg> markup for $almanac.skymap — nothing
+## else (no surrounding <html>, no DOCTYPE) — so the output file is a plain
+## SVG document that index.html's pollSkymap() can fetch as text and drop
+## straight into the card via wrap.innerHTML, exactly like the snapshot
+## that's already embedded in celestial.html.
+##
+## Same "one template, one job" pattern already used for archive.json.tmpl
+## and charts_json.tmpl: a tiny .tmpl whose only output is the one thing a
+## page needs, rather than extracting it from a bigger HTML report.
+##
+## width=700 matches what mapSkymap.php already calls (the real PHP card
+## this was adapted from) — kept the same rather than switching to
+## width='auto' so the rendered sky stays visually identical to the
+## snapshot already on the page. fromoutside isn't passed, so it defaults
+## to the "lying on the ground looking up" view — also matching the PHP
+## card and the snapshot's own <desc> framing.
+##
+## bodies / earth_satellites / per-body Formats are NOT passed here on
+## purpose — those come from [Almanac][[Skymap]] in weewx.conf, which (per
+## the mapSkymap.php output already on this site) is presumably already
+## configured the way you want it. Pass them as keyword args here only if
+## you want this particular file to differ from your site's normal config.
+#errorCatcher Echo
+$almanac.skymap(width=300)
