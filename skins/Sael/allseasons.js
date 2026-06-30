@@ -925,7 +925,7 @@ function render(){
   const stationLocation = todayObsArchive?.meta?.station_location;
   if(stationLocation){
     document.getElementById('pageLocationTitle').textContent = stationLocation;
-    document.title = `DivumRI — ${stationLocation}`;
+    document.title = `${stationLocation}`;
   }
 
   document.getElementById('heroTemp').textContent = fmtTemp(heroTempC, sys.temp);
