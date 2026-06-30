@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SǢL</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ===================== Birch palette mapped onto Bootstrap CSS vars ===================== */
+:root,
+[data-bs-theme="light"]{
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-lime:#C9DA1E;
+  --bw-lime-soft:#2E331A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#2C5478;
+  --bw-instrument-headspace:#495E74;
+  --bw-instrument-border:#E8EEF5;
+  --bw-radius:18px;
+  --bw-radius-sm:10px;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#2E5C84;
+  --bs-body-color:#F2F6FA;
+  --bs-secondary-color:#AFC8DE;
+  --bs-tertiary-bg:#1B3A57;
+  --bs-secondary-bg:#234870;
+  --bs-border-color:#2C5478;
+  --bs-border-color-translucent:#2C5478;
+  --bs-card-bg:#16314D;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+  --bs-warning-rgb:232,163,61;
+  --bs-font-sans-serif:'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-bs-theme="dark"]{
+  --bw-instrument-headspace:#222A2E;
+  --bw-instrument-border:#343E43;
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#343E43;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#14181B;
+  --bs-body-color:#EAEFE9;
+  --bs-secondary-color:#8C9A95;
+  --bs-tertiary-bg:#222A2E;
+  --bs-secondary-bg:#2A3338;
+  --bs-border-color:#343E43;
+  --bs-border-color-translucent:#343E43;
+  --bs-card-bg:#1B2125;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+}
+
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--bs-font-sans-serif);
+  padding-bottom:48px;
+  transition:background-color .25s ease, color .25s ease;
+}
+.font-mono{font-family:'JetBrains Mono','Courier New',monospace;}
+.card{border-radius:var(--bw-radius-sm); box-shadow:var(--bw-shadow);}
+.shadow-card{box-shadow:var(--bw-shadow) !important;}
+
+.nav-scroll-sep{width:1px;height:24px;background:var(--bs-border-color);margin:0 4px;}
+@media (max-width:767.98px){
+  .nav-scroll-sep{width:100%;height:1px;margin:6px 0;}
+}
+
+/* ---------- Birch bark signature motif ---------- */
+.bark-rule{height:14px;width:100%;overflow:hidden;opacity:.55;}
+.bark-rule svg{display:block;width:100%;height:100%;}
+.bark-rule .lenticel{stroke:var(--bw-line);stroke-width:1.5;}
+
+/* ---------- Top bar ---------- */
+.brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
+.brand-mark .leaf{color:var(--bw-accent);}
+.brand-sub{font-size:11px;color:var(--bs-secondary-color);letter-spacing:.06em;}
+
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.icon-btn svg{width:18px;height:18px;}
+#themeToggle{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);}
+#themeToggle:hover,#themeToggle:focus,#themeToggle.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+#themeMenu .dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12.5px;}
+#themeMenu .theme-check{width:14px;color:var(--bw-accent);}
+#themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
+.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;}
+.nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+
+.navbar-toggler{border:none;padding:6px 10px;}
+.navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
+.navbar-toggler-icon{
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F2F6FA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+@media (max-width:767.98px){
+  .navbar-collapse{margin-top:14px;}
+  .navbar-collapse .dropdown,
+  .navbar-collapse .nav-btn,
+  .navbar-collapse .unit-select{width:100%;}
+  .navbar-collapse .nav-btn{text-align:left;}
+  .navbar-collapse .dropdown-menu{position:static;width:100%;margin-top:4px;}
+}
+@media (orientation:landscape) and (max-width:926px){
+  .navbar-expand-md .navbar-collapse{display:none !important;}
+  .navbar-expand-md .navbar-collapse.show{display:flex !important;}
+  .navbar-expand-md .navbar-toggler{display:block !important;}
+}
+
+/* ---------- Warning banner ---------- */
+.warning-banner{
+  --alert-color: var(--bw-accent);
+  --alert-color-soft: var(--bw-accent-soft);
+  background:linear-gradient(135deg, var(--alert-color-soft), transparent);
+  border:1px solid var(--alert-color);
+  border-left:5px solid var(--alert-color);
+  border-radius:var(--bw-radius-sm);
+  font-size:.84em;
+  line-height:1.3;
+}
+.warning-banner--red{ --alert-color: var(--bw-danger); --alert-color-soft: var(--bw-danger-soft); }
+.warning-banner--yellow{ --alert-color: var(--bw-yellow); --alert-color-soft: var(--bw-yellow-soft); }
+.warning-banner strong{color:var(--alert-color);}
+.warning-banner a{color:var(--bw-sky);text-decoration:underline;font-weight:600;word-break:break-all;}
+.warning-banner ul, .warning-banner ol{margin-bottom:0;padding-left:1.2em;}
+.warning-banner li{margin-bottom:4px;}
+.warning-banner p:last-child{margin-bottom:0;}
+.alert-more-btn{padding:1px 8px;font-size:.78em;line-height:1.4;}
+
+/* ---------- Current conditions: tidy card grid ---------- */
+.cc-grid{
+  display:grid;
+  grid-template-columns: minmax(0,1.4fr) minmax(0,1fr);
+  grid-template-rows:auto auto;
+  gap:16px;
+  align-items:stretch;
+}
+.cc-main{grid-column:1;grid-row:1 / span 2;border-radius:var(--bw-radius);}
+.cc-mini-grid{
+  grid-column:2;grid-row:1;
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+}
+.cc-wind{grid-column:2;grid-row:2;border-radius:var(--bw-radius-sm);}
+@media (max-width:767.98px){
+  .cc-grid{grid-template-columns:1fr;grid-template-rows:auto;}
+  .cc-main, .cc-mini-grid, .cc-wind{grid-column:1;grid-row:auto;}
+}
+.hero-now-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bs-secondary-color);}
+.hero-temp{font-weight:700;font-size:clamp(50px,7.2vw,76px);line-height:1;}
+.hero-icon{width:74px;height:74px;flex-shrink:0;object-fit:contain;}
+.hero-cond{font-size:17px;}
+.cc-stats-row{border-top:1px solid var(--bs-border-color);}
+.cc-stat{display:flex;flex-direction:column;gap:2px;}
+.cc-stat-label{font-size:11.5px;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;}
+.cc-stat-value{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.cc-mini{display:flex;flex-direction:column;justify-content:center;}
+.cc-mini-label{font-size:12px;color:var(--bs-secondary-color);margin-bottom:4px;}
+.cc-mini-value{font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+.cc-mini-sub{font-size:11.5px;color:var(--bs-secondary-color);margin-top:2px;}
+.cc-mini-sub b{color:var(--bs-body-color);font-weight:600;}
+.cc-wind .cc-stat-value{font-size:16px;}
+.aqi-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+}
+.aqi-pill--low{background:rgba(91,187,138,.15);color:var(--bw-good);}
+.aqi-pill--mod{background:rgba(214,190,78,.15);color:var(--bw-yellow);}
+.aqi-pill--high{background:rgba(227,107,87,.15);color:var(--bw-danger);}
+.uv-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+}
+.uv-pill--low{background:rgba(91,187,138,.15);color:var(--bw-good);}
+.uv-pill--mod{background:rgba(214,190,78,.15);color:var(--bw-yellow);}
+.uv-pill--high{background:rgba(227,107,87,.15);color:var(--bw-danger);}
+.hero-suntimes{border-top:1px solid var(--bs-border-color);}
+.hero-suntime{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:13.5px;color:var(--bs-body-color);}
+.hero-suntime-icon{display:inline-flex;line-height:0;flex-shrink:0;}
+.hero-suntime-icon--sun-rise,.hero-suntime-icon--sun-set{color:var(--bw-accent);}
+.hero-suntime-icon--moon{color:var(--bs-secondary-color);}
+
+/* ---------- Wind direction mini-compass ---------- */
+.wind-compass-mini{position:relative;width:64px;height:64px;flex-shrink:0;}
+.wind-compass-mini-ring{width:100%;height:100%;display:block;}
+.wind-compass-mini-arrow{
+  transform-origin:40px 40px;
+  transition:transform .6s cubic-bezier(.4,0,.2,1);
+}
+.wind-compass-mini-label{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;line-height:1.15;pointer-events:none;
+}
+.wind-compass-mini-label span:first-child{font-size:13px;font-weight:700;}
+.wind-compass-mini-label span:last-child{font-size:9.5px;color:var(--bs-secondary-color);}
+.pollen-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--bw-sky-soft);color:var(--bw-sky);
+  font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+}
+
+/* ---------- Instruments ---------- */
+.instrument-row{align-items:stretch;}
+.instrument-col{flex:1 1 150px;min-width:120px;}
+.instrument-col--narrow{flex:0.72 1 110px;min-width:90px;}
+.instrument-col--narrow.dual{flex:1.25 1 175px;min-width:140px;}
+@media (max-width:767.98px){
+  .instrument-col, .instrument-col--narrow, .instrument-col--narrow.dual{flex:1 1 100%;}
+}
+.instrument-card{display:flex;align-items:center;justify-content:center;padding:18px 8px;}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;}
+.gauge-wrap canvas{width:200px!important;max-width:100%;height:auto!important;aspect-ratio:1/1;display:block;}
+.wind-compass-wrap{width:200px;max-width:100%;aspect-ratio:1/1;}
+.wind-compass-wrap svg{width:100%;height:100%;display:block;}
+.gauge-caption{font-size:11px;color:var(--bs-secondary-color);}
+.gauge-value-big{font-size:20px;font-weight:700;color:var(--bw-good);margin-top:2px;}
+
+/* ---------- Thermometer (SVG, not canvas-gauges — it has no bulb/linear gauge type) ---------- */
+.thermo-svg{width:130px;max-width:100%;height:auto;aspect-ratio:130/200;display:block;}
+#thermoMercury{transition:y .8s ease, height .8s ease, fill .8s ease;}
+#thermoBulb{transition:fill .8s ease;}
+
+/* ---------- Rain gauge (measuring cylinder, same SVG-not-canvas reasoning as the thermometer) ---------- */
+.raingauge-svg{width:130px;max-width:100%;height:auto;aspect-ratio:130/200;display:block;}
+.raingauge-svg.dual{width:220px;aspect-ratio:220/200;}
+#rainFill{transition:y .8s ease, height .8s ease;}
+#rainMeniscus{transition:cy .8s ease;}
+
+/* day strip */
+.day-card{
+  flex:1 1 110px;min-width:90px;padding:14px 8px;text-align:center;
+  cursor:pointer;position:relative;
+}
+.day-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:transparent;}
+.day-card.active::before{background:var(--bw-lime);}
+.day-card .dname{font-size:12.5px;font-weight:700;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;}
+.day-card .dicon{width:38px;height:38px;margin:8px auto 4px;display:block;object-fit:contain;}
+.day-card .dcond{font-size:11.5px;color:var(--bs-secondary-color);height:28px;display:flex;align-items:center;justify-content:center;}
+.day-card .dtemps{font-family:'JetBrains Mono',monospace;font-size:14px;margin-top:4px;}
+.day-card .dtemps .lo{color:var(--bs-secondary-color);}
+.day-card .dwarn{position:absolute;top:6px;right:6px;display:block;}
+.day-card.active{background:var(--bs-tertiary-bg);}
+.day-card.active .dname{color:var(--bw-accent);}
+
+/* ---------- Section labels ---------- */
+.section-label{
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bs-secondary-color);
+  margin:30px 0 12px;display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:"";flex:1;height:1px;background:var(--bs-border-color);}
+
+/* ---------- Metric cards ---------- */
+.metric-card .mlabel{font-size:12px;color:var(--bs-secondary-color);display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.metric-card .mvalue{font-size:26px;font-weight:700;}
+.metric-card .mvalue small{font-size:13px;color:var(--bs-secondary-color);font-weight:400;}
+.metric-card .msub{font-size:12.5px;color:var(--bs-secondary-color);margin-top:4px;}
+.beaufort-chip{display:inline-block;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bw-sky-soft);color:var(--bw-sky);padding:2px 8px;border-radius:10px;}
+.mlabel-icon{width:14px;height:14px;object-fit:contain;}
+
+/* ---------- Temperature feature card (Today's Observations) ---------- */
+.metric-card--feature{padding:18px;}
+.feature-icon{width:30px;height:30px;flex:none;}
+.feature-icon svg{width:100%;height:100%;display:block;}
+.feature-title{font-size:16px;font-weight:700;}
+.feature-current{font-size:34px;font-weight:700;line-height:1;}
+.obs-subcol{border-top:1px solid var(--bs-border-color);padding-top:12px;margin-top:4px;}
+@media (min-width:768px){
+  .obs-subcol{border-top:none;border-left:1px solid var(--bs-border-color);padding-top:0;margin-top:0;padding-left:18px;}
+  .obs-subcol:first-child{border-left:none;padding-left:0;}
+}
+.obs-subcol-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--bs-secondary-color);margin-bottom:8px;}
+.obs-stat-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;padding:3px 0;gap:8px;}
+.obs-stat-row .obs-stat-label{color:var(--bs-secondary-color);}
+.obs-stat-row .obs-stat-value{font-family:'JetBrains Mono',monospace;font-weight:600;text-align:right;}
+.obs-stat-time{font-size:10.5px;color:var(--bs-secondary-color);font-weight:400;margin-left:4px;}
+.obs-trend-rising{color:#E8826F;}
+.obs-trend-falling{color:var(--bw-sky);}
+.obs-trend-steady{color:var(--bs-secondary-color);}
+.obs-footnote{font-size:11px;color:var(--bs-secondary-color);font-style:italic;margin-top:12px;}
+.metric-card--feature-half .obs-stat-row{font-size:14px;}
+.obs-unsupported{font-family:var(--bs-font-sans-serif);font-weight:400;font-style:italic;font-size:12px;color:var(--bs-secondary-color);}
+
+/* ---------- Hourly table ---------- */
+.hourly-title h2{font-size:18px;font-weight:700;margin:0;}
+.hourly-title span{font-size:12px;color:var(--bs-secondary-color);}
+table.hourly{min-width:760px;}
+table.hourly th, table.hourly td{text-align:center;font-size:13px;vertical-align:middle;}
+table.hourly th{font-size:11px;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;font-weight:600;border-bottom:1px solid var(--bs-border-color);}
+table.hourly td.rowlabel, table.hourly th.rowlabel{text-align:left;position:sticky;left:0;background:var(--bs-card-bg);font-weight:700;color:var(--bs-secondary-color);}
+table.hourly img.hicon{width:28px;height:28px;display:block;margin:0 auto 4px;object-fit:contain;}
+
+/* ---------- Hourly temperature track (icons/temps riding an invisible plot line) ---------- */
+table.hourly tr.track-row td.track-cell{
+  position:relative;
+  height:128px;
+  padding:0;
+  vertical-align:top;
+}
+table.hourly .track-marker{
+  position:absolute;
+  top:0;left:0;right:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  transition:top .4s ease;
+}
+table.hourly .track-marker img.hicon{margin-bottom:2px;}
+
+/* ---------- Wind-gust direction badge ---------- */
+.wind-badge{
+  position:relative;
+  width:38px;height:38px;
+  margin:0 auto;
+  display:flex;align-items:center;justify-content:center;
+}
+.wind-badge-ring{
+  position:absolute;inset:0;width:100%;height:100%;
+  transition:transform .4s ease;
+}
+.wind-badge-value{
+  position:relative;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:700;
+  color:var(--wind-col, var(--bs-secondary-color));
+}
+
+/* ---------- Meteocons contrast filter, light theme only ---------- */
+[data-bs-theme="light"] .hero-icon,
+[data-bs-theme="light"] .dicon,
+[data-bs-theme="light"] .hicon,
+[data-bs-theme="light"] .mlabel-icon{
+  filter:
+    drop-shadow(0 0.5px 1px rgba(20,24,27,.40))
+    drop-shadow(0 1.5px 4px rgba(20,24,27,.26))
+    drop-shadow(0 4px 7px rgba(20,24,27,.18));
+}
+
+/* ---------- Meteocons contrast filter, dark theme only ---------- */
+[data-bs-theme="dark"] .hero-icon,
+[data-bs-theme="dark"] .dicon,
+[data-bs-theme="dark"] .hicon,
+[data-bs-theme="dark"] .mlabel-icon{
+  filter:
+    brightness(1.45) contrast(1.2)
+    drop-shadow(0 0 2px rgba(255,255,255,.32))
+    drop-shadow(0 0 8px rgba(255,255,255,.18));
+}
+table.hourly .temp-cell{font-family:'JetBrains Mono',monospace;font-weight:600;}
+table.hourly .rain-cell{color:var(--bw-sky);font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+/* ---------- Sun/pollen/aq strip ---------- */
+.strip-card .slabel{font-size:12px;color:var(--bs-secondary-color);margin-bottom:10px;display:flex;justify-content:space-between;}
+.level-badge{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:20px;}
+.level-dot{width:10px;height:10px;border-radius:50%;}
+.level-low{background:var(--bw-good);} .level-mod{background:var(--bw-accent);} .level-high{background:var(--bw-danger);}
+.strip-detail{font-size:13px;color:var(--bs-secondary-color);margin-top:6px;}
+.species-breakdown{margin-top:12px;padding-top:10px;border-top:1px solid var(--bs-border-color);display:flex;flex-direction:column;gap:6px;}
+.species-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;}
+.species-row .species-name{color:var(--bs-secondary-color);display:flex;align-items:center;gap:6px;}
+.species-row .species-name .level-dot{width:7px;height:7px;flex:none;}
+.species-row .species-value{font-family:'JetBrains Mono',monospace;font-weight:600;text-align:right;}
+
+.unit-select{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.03em;
+  color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bs-body-color);
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23E8EEF5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+.unit-select:focus{color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bw-accent);box-shadow:0 0 0 .25rem rgba(232,163,61,.25);}
+.unit-select option{color:#000;background-color:#fff;}
+
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+
+.live-status-wrap{position:relative;display:inline-flex;width:8px;height:8px;flex-shrink:0;}
+#liveStatusDot{width:8px;height:8px;border-radius:50%;display:block;position:relative;z-index:1;}
+.live-status-ripple{
+  position:absolute;top:50%;left:50%;
+  width:8px;height:8px;margin:-4px 0 0 -4px;
+  border-radius:50%;
+  background:radial-gradient(circle, var(--bw-good) 0%, var(--bw-good) 30%, transparent 72%);
+  opacity:0;pointer-events:none;
+  filter:blur(.5px);
+}
+.live-status-ripple.ping{ animation: dot-ripple .65s ease-out 3; }
+@keyframes dot-ripple{
+  0%   { width:8px;  height:8px;  margin:-4px 0 0 -4px;   opacity:.55; }
+  100% { width:72px; height:72px; margin:-36px 0 0 -36px; opacity:0; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md py-3">
+  <div class="container-xl">
+    <div class="d-flex align-items-baseline gap-2">
+      <span class="brand-mark"><span class="leaf">⌃</span> SǢL</span>
+    </div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navCollapse" aria-controls="navCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navCollapse">
+      <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-1 ms-md-4 mt-3 mt-md-0">
+        <div class="dropdown">
+          <button class="btn nav-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Charts</button>
+          <ul class="dropdown-menu font-mono">
+            <li><a class="dropdown-item" href="charts.html?type=temperature">Temperature</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=wind">Wind &amp; Gust</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=rain">Rain &amp; Rain Rate</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=barometer">Barometer</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=solaruv">Solar &amp; UV</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=cloud">Cloud &amp; Visibility</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=lightning">Lightning</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=pollen">Pollen</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=airquality">Air Quality</a></li>
+            <li><a class="dropdown-item" href="charts.html?type=gases">Greenhouse Gases</a></li>
+         </ul>
+        </div>
+        <div class="dropdown">
+          <button class="btn nav-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Records</button>
+          <ul class="dropdown-menu font-mono">
+            <li><a class="dropdown-item" href="records.html?type=temperature">Temperature</a></li>
+            <li><a class="dropdown-item" href="records.html?type=wind">Wind &amp; Gust</a></li>
+            <li><a class="dropdown-item" href="records.html?type=rain">Rain &amp; Rain Rate</a></li>
+            <li><a class="dropdown-item" href="records.html?type=barometer">Barometer</a></li>
+          </ul>
+        </div>
+        <a href="climate.html" class="btn nav-btn">Climate</a>
+        <a href="almanac.html" class="btn nav-btn">Almanac</a>
+        <span class="nav-scroll-sep d-none d-md-inline"></span>
+        <a href="locationforecast.html" class="btn nav-btn">Forecasts</a>
+        <a href="#observationsSection" class="btn nav-btn nav-scroll-btn">Observations</a>
+      </div>
+      <div class="d-flex flex-column flex-md-row align-items-stretch align-items-md-center gap-2 ms-md-auto mt-3 mt-md-0">
+        <select class="form-select form-select-sm unit-select rounded-pill" id="unitSystem" title="Unit system" style="width:auto;">
+          <option value="uk">UK</option>
+          <option value="us">US</option>
+          <option value="metric">Metric</option>
+          <option value="scandi">Scandinavian</option>
+          <option value="canada">Canada</option>
+          <option value="aviation">Aviation</option>
+          <option value="beaufort">Beaufort wind</option>
+        </select>
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary icon-btn dropdown-toggle-no-caret" id="themeToggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Theme" aria-label="Theme">
+            <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5.64 5.64l1.42 1.42M16.95 16.95l1.42 1.42M5.64 18.36l1.42-1.42M16.95 7.05l1.42-1.42"/></svg>
+            <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36A5.4 5.4 0 0 1 12 3z"/></svg>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end font-mono" aria-labelledby="themeToggle" id="themeMenu">
+            <li><button class="dropdown-item" type="button" data-theme-choice="auto">Auto <span class="theme-check"></span></button></li>
+            <li><button class="dropdown-item" type="button" data-theme-choice="light">Light <span class="theme-check"></span></button></li>
+            <li><button class="dropdown-item" type="button" data-theme-choice="dark">Dark <span class="theme-check"></span></button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container-xl">
+  <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2">
+    <h1 class="fw-bold fs-2 mb-0 mt-1" id="pageLocationTitle">Steeple Claydon, UK</h1>
+    <div class="text-end">
+      <div class="font-mono small d-flex align-items-center gap-2" style="color:var(--bs-secondary-color);">
+        <span class="live-status-wrap">
+          <span id="liveStatusDot" title="Connecting…" style="background:var(--bs-secondary-color);"></span>
+          <span id="liveStatusRipple" class="live-status-ripple"></span>
+        </span>
+        <span id="liveStatusLabel">CONNECTING</span> · UPDATED <span id="liveClock">07:42:18</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bark-rule"><svg preserveAspectRatio="none" viewBox="0 0 800 14"><line class="lenticel" x1="0" y1="3" x2="800" y2="3"/><line class="lenticel" x1="0" y1="9" x2="240" y2="9"/><line class="lenticel" x1="300" y1="9" x2="520" y2="9"/><line class="lenticel" x1="580" y1="9" x2="800" y2="9"/></svg></div>
+
+<div class="container-xl mt-3">
+
+  <!-- CURRENT CONDITIONS -->
+  <div class="cc-grid">
+    <div class="card cc-main p-4">
+      <div class="hero-now-label mb-1">Right Now</div>
+      <div class="d-flex align-items-center gap-3">
+        <img class="hero-icon" id="heroIcon" src="https://cdn.meteocons.com/3.0.0-next.10/svg/fill/partly-cloudy-day.svg" alt="Cloudy" width="74" height="74">
+        <div class="hero-temp" id="heroTemp">20°</div>
+      </div>
+      <div class="hero-cond mt-1" id="heroCond">Cloudy, light breeze from the SW</div>
+      <div class="cc-badges d-flex flex-wrap gap-2 mt-2">
+        <span class="pollen-pill" id="pollenPillHero">🌿 Pollen: Very High</span>
+        <span class="aqi-pill" id="aqiPillHero" style="display:none;"></span>
+        <span class="uv-pill" id="uvPillHero" style="display:none;"></span>
+      </div>
+      <div class="cc-stats-row d-flex flex-wrap gap-4 mt-3 pt-3">
+        <div class="cc-stat"><span class="cc-stat-label">Feels like</span><span class="cc-stat-value" id="feelsLike">19°</span></div>
+        <div class="cc-stat"><span class="cc-stat-label">High</span><span class="cc-stat-value" id="ccHigh">--</span></div>
+        <div class="cc-stat"><span class="cc-stat-label">Low</span><span class="cc-stat-value" id="ccLow">--</span></div>
+      </div>
+      <div class="hero-suntimes d-flex flex-wrap align-items-center gap-3 mt-3 pt-3">
+        <span class="hero-suntime" title="Sunrise">
+          <span class="hero-suntime-icon hero-suntime-icon--sun-rise"><svg viewBox="0 0 18 14" width="15" height="12"><path d="M2 13 A7 7 0 0 1 16 13 Z" fill="currentColor"/></svg></span>
+          <b id="heroSunRise">--:--</b>
+        </span>
+        <span class="hero-suntime" title="Sunset">
+          <span class="hero-suntime-icon hero-suntime-icon--sun-set"><svg viewBox="0 0 18 14" width="15" height="12"><path d="M2 1 A7 7 0 0 0 16 1 Z" fill="currentColor"/></svg></span>
+          <b id="heroSunSet">--:--</b>
+        </span>
+        <span class="hero-suntime" title="Moonrise">
+          <span class="hero-suntime-icon hero-suntime-icon--moon"><svg viewBox="0 0 18 14" width="15" height="12"><path d="M2 13 A7 7 0 0 1 16 13" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <b id="heroMoonRise">--:--</b>
+        </span>
+        <span class="hero-suntime" title="Moonset">
+          <span class="hero-suntime-icon hero-suntime-icon--moon"><svg viewBox="0 0 18 14" width="15" height="12"><path d="M2 1 A7 7 0 0 0 16 1" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <b id="heroMoonSet">--:--</b>
+        </span>
+      </div>
+    </div>
+
+    <div class="cc-mini-grid">
+      <div class="card cc-mini p-3">
+        <div class="cc-mini-label">Barometer</div>
+        <div class="cc-mini-value" id="pressureHero">1015 hPa</div>
+        <div class="cc-mini-sub">Air density <b id="ccAirDensity">--</b></div>
+      </div>
+      <div class="card cc-mini p-3">
+        <div class="cc-mini-label">Humidity</div>
+        <div class="cc-mini-value" id="humidityHero">70%</div>
+      </div>
+      <div class="card cc-mini p-3">
+        <div class="cc-mini-label">Dew Point</div>
+        <div class="cc-mini-value" id="ccDewPoint">--</div>
+        <div class="cc-mini-sub">ET <b id="ccEt">--</b></div>
+        <div class="cc-mini-sub">VPD <b id="ccVpd">--</b></div>
+      </div>
+      <div class="card cc-mini p-3">
+        <div class="cc-mini-label">Rain</div>
+        <div class="cc-mini-value" id="ccRainTotal">0 mm</div>
+        <div class="cc-mini-sub" id="ccRainRate">0 mm/h</div>
+        <div class="cc-mini-sub" id="rainNextRow">Next hour <b id="rainNextHero">20%</b></div>
+      </div>
+    </div>
+
+    <div class="card cc-wind p-3">
+      <div class="cc-mini-label">Wind</div>
+      <div class="cc-wind-row d-flex align-items-center gap-3 mt-1">
+        <div class="wind-compass-mini">
+          <svg viewBox="0 0 80 80" class="wind-compass-mini-ring" aria-hidden="true">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--bs-secondary-color)" stroke-width="6" opacity=".5"/>
+            <g id="windCompassMiniArrow" class="wind-compass-mini-arrow">
+              <path d="M40 24 L48 6 L32 6 Z" fill="var(--bw-danger)"/>
+            </g>
+          </svg>
+          <div class="wind-compass-mini-label">
+            <span id="gustDirHero">SW</span>
+            <span id="ccWindDirDeg"></span>
+          </div>
+        </div>
+        <div class="cc-wind-stats d-flex gap-4">
+          <div class="cc-stat"><span class="cc-stat-label">Speed</span><span class="cc-stat-value" id="ccWindSpeed">--</span></div>
+          <div class="cc-stat"><span class="cc-stat-label">Gust</span><span class="cc-stat-value" id="gustHero">19 mph</span></div>
+          <div class="cc-stat"><span class="cc-stat-label">Dir</span><span class="cc-stat-value" id="ccGustDirDeg">227°</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTRUMENTS -->
+  <!--div class="section-label">Instruments</div>
+  <div class="instrument-row d-flex flex-wrap gap-3">
+    <div class="instrument-col instrument-col--narrow">
+      <div class="card instrument-card h-100">
+        <div class="gauge-wrap gauge-wrap--thermometer">
+          <svg id="thermoSvg" class="thermo-svg" viewBox="0 0 130 200" aria-label="Outdoor temperature thermometer"><!-- populated by buildThermometerSvg() --></svg>
+          <!--div class="gauge-caption" id="thermoCaption">Feels like 19°C</div>
+        </div>
+      </div>
+    </div>
+    <div class="instrument-col">
+      <div class="card instrument-card h-100">
+        <div class="gauge-wrap">
+          <div id="windCompassEchartsWrap" class="wind-compass-wrap" aria-label="Wind direction compass"></div>
+        </div>
+      </div>
+    </div>
+    <div class="instrument-col">
+      <div class="card instrument-card h-100">
+        <div class="gauge-wrap">
+          <div id="windCombinedEchartsWrap" class="wind-compass-wrap" aria-label="Wind speed and gust gauge"></div>
+        </div>
+      </div>
+    </div>
+    <div class="instrument-col">
+      <div class="card instrument-card h-100">
+        <div class="gauge-wrap">
+          <div id="baroEchartsWrap" class="wind-compass-wrap" aria-label="Barometer gauge"></div>
+        </div>
+      </div>
+    </div>
+    <div class="instrument-col instrument-col--narrow" id="rainGaugeCol">
+      <div class="card instrument-card h-100">
+        <div class="gauge-wrap gauge-wrap--raingauge">
+          <svg id="rainGaugeSvg" class="raingauge-svg" viewBox="0 0 130 200" aria-label="Today's rainfall measuring cylinder"><!-- populated by buildRainGaugeSvg() --></svg>
+          <!--div class="gauge-caption" id="rainGaugeCaption">Rain rate: 0 mm/hr</div>
+        </div>
+      </div>
+    </div>
+  </div-->
+
+  <div id="warningContainer" class="mt-3"><!-- populated by JS; hidden entirely when no active alerts --></div>
+
+  <!-- FORECAST -->
+  <div class="section-label" id="forecastSection">Forecast</div>
+  <div class="day-strip d-flex flex-wrap gap-3" id="dayStrip"><!-- populated by JS --></div>
+
+  <!-- HOURLY -->
+  <div class="card mt-4 p-4">
+    <div class="hourly-title d-flex align-items-baseline justify-content-between mb-3">
+      <h2 id="hourlyDayTitle">Today — hourly</h2>
+      <span>Forecast source: Open‑Meteo</span>
+    </div>
+    <div class="table-responsive">
+      <table class="hourly table table-borderless mb-0" id="hourlyTable"><!-- populated by JS --></table>
+    </div>
+  </div>
+
+  <!-- TODAY'S OBSERVATIONS -->
+  <div class="section-label" id="observationsSection">Today's Observations</div>
+  <div class="row g-3" id="metricGrid"><!-- populated by JS --></div>
+
+  <!-- SKY & SOLAR -->
+  <div class="section-label">Sky &amp; Solar</div>
+  <div class="row g-3" id="skyGrid"><!-- populated by JS --></div>
+
+  <!-- AIR QUALITY -->
+  <div class="section-label">Air Quality</div>
+  <div class="row g-3">
+    <div class="col-12 col-md-4">
+      <div class="card strip-card p-3 h-100">
+        <div class="slabel"><span>Pollen</span><span id="pollenSrc">WeeWX sensor</span></div>
+        <div class="level-badge"><span class="level-dot level-high" id="pollenDot"></span><span id="pollenLevel">Very High</span></div>
+        <div class="strip-detail" id="pollenDetail">Very high grass pollen, high weed pollen</div>
+        <div class="species-breakdown" id="pollenBreakdown">
+          <div class="species-row"><span class="species-name"><span class="level-dot level-high"></span>Grass</span><span class="species-value">High (32)</span></div>
+          <div class="species-row"><span class="species-name"><span class="level-dot level-mod"></span>Mugwort</span><span class="species-value">Moderate (12)</span></div>
+          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>Birch</span><span class="species-value">Low (4)</span></div>
+          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>Alder</span><span class="species-value">Low (2)</span></div>
+          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>Olive</span><span class="species-value">Low (0)</span></div>
+          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>Ragweed</span><span class="species-value">Low (0)</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card strip-card p-3 h-100">
+        <div class="slabel"><span>Air quality</span><span id="aqSrc">WeeWX sensor</span></div>
+        <div class="level-badge"><span class="level-dot level-low" id="aqDot"></span><span id="aqLevel">Low</span></div>
+        <div class="strip-detail" id="aqDetail">Enjoy your usual outdoor activities</div>
+        <div class="species-breakdown" id="aqBreakdown">
+          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>PM1</span><span class="species-value">AQI 18 (Low)</span></div>
+          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>PM2.5</span><span class="species-value">AQI 22 (Low)</span></div>
+          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>PM4</span><span class="species-value">AQI 15 (Low)</span></div>
+          <div class="species-row"><span class="species-name"><span class="level-dot level-low"></span>PM10</span><span class="species-value">AQI 9 (Low)</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4" id="ghgCardSlot"><!-- populated by JS --></div>
+  </div>
+
+</div>
+
+<footer class="container-xl mt-5 pt-3 border-top d-flex justify-content-between flex-wrap gap-2">
+  <span>Re-ImaginedWX — a WeeWX 5 skin</span>
+  <span>Forecast: Open‑Meteo · Warnings: OpenWeatherMap + Met Office RSS (UK backup) · Pollen &amp; air quality: WeeWX sensors · Live conditions: WeeWX loop data</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<!-- ?v=N defeats a Cloudflare edge cache serving a stale copy of this
+     file after an update — bump N every time the matching .js file
+     changes. Discovered this was needed when a cache-busting fix inside
+     allseasons.js itself kept silently failing to reach the browser:
+     `curl -I` on the live URL showed cf-cache-status: HIT with a
+     content-length matching an OLDER version, hours after the real
+     file had been replaced on the server. {cache:'no-store'} on a
+     fetch() call only stops the browser's own cache — it does nothing
+     about an edge cache the request never gets past in the first
+     place, since cloudflared serves it as the very first hop. -->
+<script src="instruments.js?v=cbe51906"></script>
+<script src="forecast.js?v=bafdd194"></script>
+<script src="allseasons.js?v=e742ea47"></script>
+</body>
+</html>
