@@ -1,0 +1,117 @@
+## =====================================================================
+## gallery.json.tmpl
+##
+## Generates jsondata/gallery.json for gallery.html, from numbered
+## gallery_item<N>_* keys under THIS SKIN's [[[Extras]]] stanza in
+## weewx.conf. This is the actual "add an iframe via weewx.conf"
+## mechanism gallery.html's empty-state help text refers to — config
+## goes in, this template turns it into the JSON gallery.html fetches
+## at runtime. No code changes needed to add/remove/reorder items.
+##
+## ---------------------------------------------------------------------
+## 1) WHERE THIS FILE GOES
+## ---------------------------------------------------------------------
+## Place this file in this skin's template directory so that, mirrored
+## into HTML_ROOT, it lands at jsondata/gallery.json — i.e. put it at:
+##     <skin_dir>/jsondata/gallery.json.tmpl
+## (alongside whatever the other jsondata/*.json.tmpl files in this skin
+## already are — match wherever loop.json/archive.json/forecastcard.txt
+## etc. actually live; this comment can't see your skin.conf to confirm
+## that path, so double check it).
+##
+## CheetahGenerator strips the trailing ".tmpl" and mirrors the path
+## relative to the skin directory into HTML_ROOT, so a template at
+## jsondata/gallery.json.tmpl produces HTML_ROOT/jsondata/gallery.json
+## automatically, the same way charts_json.tmpl already produces this
+## skin's charts.json (see charts.html/records.html/climate.html's own
+## comments, which confirm that template exists in this project). If
+## this skin's skin.conf explicitly enumerates every template under
+## [CheetahGenerator] (many skins do, for clarity/ordering) rather than
+## relying on that default discovery, add a matching stanza here too —
+## mirror whatever entry it already has for charts_json.tmpl, e.g.:
+##
+##     [CheetahGenerator]
+##         [[ToDate]]
+##             [[[gallery]]]
+##                 template = jsondata/gallery.json.tmpl
+##
+## ---------------------------------------------------------------------
+## 2) weewx.conf — ADDING/EDITING GALLERY ITEMS
+## ---------------------------------------------------------------------
+## Under THIS SKIN's own [[[Extras]]] stanza (same [[[Extras]]] that
+## already feeds $Extras elsewhere in this skin, if it does), add a
+## block of 4 keys per item, numbered starting at 1 with NO GAPS in the
+## numbering (the loop below stops at the first missing title/src pair,
+## so item 1, 2, 3 works; item 1, 3, 4 — skipping 2 — silently drops
+## everything from 3 onward):
+##
+##     [StdReport]
+##         [[YourSkinStanzaName]]
+##             skin = community_weather
+##             [[[Extras]]]
+##                 gallery_item1_title    = Live Radar
+##                 gallery_item1_category = map
+##                 gallery_item1_src      = https://example.com/embed/radar
+##                 gallery_item1_aspect   = 4:3
+##                 gallery_item1_notes    = Refreshes every 5 minutes
+##
+##                 gallery_item2_title    = Garden Webcam
+##                 gallery_item2_category = webcam
+##                 gallery_item2_src      = https://example.com/embed/cam1
+##                 gallery_item2_aspect   = 16:9
+##
+##                 gallery_item3_title    = Sunset Time-lapse
+##                 gallery_item3_category = timelapse
+##                 gallery_item3_src      = https://example.com/embed/tl1
+##
+## Field reference:
+##   _title    required. Display name on the card.
+##   _src      required. The iframe's embed URL. Must be http(s) — see
+##             gallery.html's sanitizeItems(), which silently drops
+##             anything else (e.g. javascript:) rather than embedding it.
+##   _category optional, default "misc". One of map / webcam / timelapse
+##             — anything else (including blank) is grouped under
+##             gallery.html's "Other" section.
+##   _aspect   optional, default "16:9". Any "W:H" pair, e.g. "4:3",
+##             "1:1" — controls the embedded frame's aspect ratio.
+##   _notes    optional. Short caption shown under the title.
+##
+## After editing weewx.conf, run a report generation cycle (or wait for
+## the next one) for this file to regenerate. No restart of anything
+## else, and no changes to gallery.html itself, are needed to add,
+## remove, or reorder items — that's the whole point of this template.
+##
+## ---------------------------------------------------------------------
+## 3) IMPLEMENTATION NOTES
+## ---------------------------------------------------------------------
+## - $Extras is this skin's [[[Extras]]] ConfigObj section; .get(key, "")
+##   returns "" for anything not set, which is what lets the loop below
+##   just skip incomplete entries instead of erroring out.
+## - The upper bound on the loop (40) is just a generous ceiling, not a
+##   real limit — raise it if a station genuinely configures more than
+##   40 gallery items, which seems unlikely.
+## - json.dumps() handles ALL the escaping (quotes, unicode, etc.) for
+##   every field in one place, rather than hand-escaping each one — that
+##   was a deliberate choice to avoid a broken-JSON bug from a title or
+##   notes field that happens to contain a quote character.
+## - This intentionally does NOT validate that _src is a real reachable
+##   URL at generation time (that would mean a network call during every
+##   report cycle, for a config value that rarely changes) — gallery.html
+##   validates the scheme (http/https only) client-side instead. A typo'd
+##   URL will still show up as a broken iframe rather than being caught
+##   here; that's a deliberate trade-off, not an oversight.
+## =====================================================================
+#encoding UTF-8
+#import json
+#set global $gallery_items = []
+#for $i in range(1, 41)
+    #set $g_title    = $Extras.get('gallery_item%d_title'    % $i, '').strip()
+    #set $g_src      = $Extras.get('gallery_item%d_src'      % $i, '').strip()
+    #if $g_title and $g_src
+        #set $g_category = $Extras.get('gallery_item%d_category' % $i, 'misc').strip().lower()
+        #set $g_aspect   = $Extras.get('gallery_item%d_aspect'   % $i, '16:9').strip()
+        #set $g_notes    = $Extras.get('gallery_item%d_notes'    % $i, '').strip()
+        #silent $gallery_items.append({'id': $i, 'title': $g_title, 'src': $g_src, 'category': $g_category, 'aspect': $g_aspect, 'notes': $g_notes})
+    #end if
+#end for
+$json.dumps($gallery_items, indent=2)
