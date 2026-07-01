@@ -1,4 +1,4 @@
-// ===================== reimagine.js =====================
+// ===================== allseasons.js =====================
 // index.html's main logic. instruments.js and forecast.js (loaded before
 // this file) hold the instrument-gauge and forecast-data code that used
 // to live here. records.html, charts.html, and climate.html each still
@@ -443,7 +443,7 @@ async function pollLive(){
     }
     setLiveStatus('live');
   }catch(e){
-    console.warn('BirchesWX: live data poll failed —', e.message);
+    console.warn('Sael: live data poll failed —', e.message);
 
     if(liveData){
       setLiveStatus('stale');
@@ -548,7 +548,7 @@ async function pollAlerts(){
       }));
     }
   }catch(e){
-    console.warn('BirchesWX: alerts poll failed —', e.message);
+    console.warn('Sael: alerts poll failed —', e.message);
   }
   applyAlertWarnFlags();
   render();
@@ -597,7 +597,7 @@ async function pollHeatAlert(){
   try{
     heatAlertItem = await fetchHeatAlert();
   }catch(e){
-    console.warn('BirchesWX: heat alert poll failed —', e.message);
+    console.warn('Sael: heat alert poll failed —', e.message);
   }
   applyAlertWarnFlags();
   render();
@@ -656,7 +656,7 @@ async function pollMetar(){
     const miles = parseMetarVisib(ob?.visib);
     metarData = miles!=null ? { visKm: mi2km(miles), raw: ob.visib, station: ob.icaoId, obsTime: ob.obsTime } : null;
   }catch(e){
-    console.warn('BirchesWX: METAR poll failed —', e.message);
+    console.warn('Sael: METAR poll failed —', e.message);
   }
   render();
 }
@@ -671,7 +671,7 @@ async function pollHeroAstro(){
     if(!res.ok) throw new Error('HTTP '+res.status);
     renderHeroSunTimes(await res.json());
   }catch(e){
-    console.warn('BirchesWX: hero sun/moon times poll failed —', e.message);
+    console.warn('Sael: hero sun/moon times poll failed —', e.message);
   }
 }
 function renderHeroSunTimes(d){
@@ -684,7 +684,7 @@ function renderHeroSunTimes(d){
 }
 
 // ===================== Icon helper (Meteocons — filled style) =====================
-const METEOCONS_BASE = 'https://cdn.meteocons.com/3.0.0-next.10/svg/fill/';
+const METEOCONS_BASE = './meteocons/';
 const ICON_MAP = {
   sun:'clear-day', moon:'clear-night',
   mostlyClear:'mostly-clear-day', mostlyClearNight:'mostly-clear-night',
@@ -845,7 +845,7 @@ async function pollTodayObs(){
   try{
     todayObsArchive = await fetchTodayObsArchive();
   }catch(e){
-    console.warn('BirchesWX: today-observations (archive.json) poll failed —', e.message);
+    console.warn('Sael: today-observations (archive.json) poll failed —', e.message);
   }
   render();
 }
@@ -925,7 +925,7 @@ function render(){
   const stationLocation = todayObsArchive?.meta?.station_location;
   if(stationLocation){
     document.getElementById('pageLocationTitle').textContent = stationLocation;
-    document.title = `DivumRI — ${stationLocation}`;
+    document.title = `${stationLocation}`;
   }
 
   document.getElementById('heroTemp').textContent = fmtTemp(heroTempC, sys.temp);
