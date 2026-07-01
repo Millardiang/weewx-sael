@@ -142,6 +142,9 @@ footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mon
       <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gWind"></div></div></div>
     </div>
     <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gWindDir"></div></div></div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
       <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gBaro"></div></div></div>
     </div>
     <div class="col-12 col-sm-6 col-lg-4">
@@ -162,9 +165,11 @@ footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mon
   </div>
 
   <p class="page-sub mt-3" style="font-size:12px;font-style:italic;">
-    Wind Rose isn't on this page yet — its dial design is still being worked out.
-    Air Quality uses PM2.5's RealAQI figure as the headline index; Humidity and Dew Point color bands
-    are general comfort-scale conventions, not figures pulled from elsewhere on this site.
+    Wind Direction's ring is a fixed compass palette (matching a reference design), not a
+    data-driven scale like the other rings; the petals inside it are a real wind rose binned from
+    charts.json's trailing 24 hours, refreshed hourly as that file regenerates. Air Quality uses
+    PM2.5's RealAQI figure as the headline index; Humidity and Dew Point color bands are general
+    comfort-scale conventions, not figures pulled from elsewhere on this site.
   </p>
 
   <footer class="text-center py-3">SǢL — Gauges</footer>
@@ -349,7 +354,121 @@ function renderWind(speedMs, gustMs){
   });
 }
 
-/* ===================== 3. Barometer ===================== */
+/* ===================== 3. Wind Direction — realtime wind rose =====================
+   Ring colours are a fixed 8-point compass palette (pink→orange→gold→
+   lime→teal→blue, looping back to pink at N) matching the framed
+   compass-rose print used as the design reference — not a data-driven
+   scale like the other gauges' rings. Each 45° band runs from one
+   ordinal label to the next (N→NE, NE→E, …), same as the reference art.
+
+   The petals inside it are a real wind rose: charts.json's windDirHourly
+   + windSpeedHourly (24 hourly samples, i.e. the trailing 24h — "realtime"
+   in the sense that it's always the most recent day, not a long-run
+   climatological average) binned into 8 direction sectors × 5 speed
+   bands, then drawn as a stacked polar bar chart sharing the same
+   0°=N / clockwise layout as the ring so a sector's petal lines up with
+   its label. windDirAvg/windSpeedAvg (charts.json's 475-point series)
+   would be the long-period version of this, not built here.
+
+   No legend is drawn yet — the 5 speed-band colours are visible on
+   hover via the tooltip for now; happy to add a compact legend as a
+   follow-up if useful once you've seen it laid out. */
+var windDirRing = [
+  [1/8,'#EE5586'], [2/8,'#F2708B'], [3/8,'#F7941D'], [4/8,'#FDBB4E'],
+  [5/8,'#A4CE4E'], [6/8,'#5FD1B9'], [7/8,'#4A9CC7'], [1,'#6B8FD6']
+];
+var WIND_ROSE_DIRS = ['N','NE','E','SE','S','SW','W','NW'];
+var WIND_ROSE_SPEED_EDGES = [2, 4, 6, 8]; // m/s upper edges of bins 0-3; bin 4 is "8+"
+var WIND_ROSE_COLORS = ['#6FB6DD','#5BBB8A','#D6BE4E','#E8A33D','#E36B57']; // calm→strong, site's own --bw-sky/good/yellow/accent/danger tokens
+var windRoseCounts = null; // counts[sector][speedBin], filled by pollWindRose()
+var windRoseTotal = 0;
+
+function windRoseSpeedBinIndex(ms){
+  for(var i=0;i<WIND_ROSE_SPEED_EDGES.length;i++){ if(ms < WIND_ROSE_SPEED_EDGES[i]) return i; }
+  return WIND_ROSE_SPEED_EDGES.length;
+}
+function windRoseSpeedBinLabel(i, unit){
+  var lo = i===0 ? 0 : WIND_ROSE_SPEED_EDGES[i-1];
+  if(i===WIND_ROSE_SPEED_EDGES.length) return windTick(lo, unit) + '+';
+  return windTick(lo, unit) + '\u2013' + windTick(WIND_ROSE_SPEED_EDGES[i], unit);
+}
+function windRoseSectorIndex(deg){
+  return Math.round((((deg % 360) + 360) % 360) / 45) % 8;
+}
+function buildWindRoseData(dirSeries, speedSeries){
+  var speedByTs = {};
+  (speedSeries || []).forEach(function(pt){ if(pt && pt[1] != null) speedByTs[pt[0]] = pt[1]; });
+  var counts = [];
+  for(var s=0; s<8; s++){ counts.push([0,0,0,0,0]); }
+  var total = 0;
+  (dirSeries || []).forEach(function(pt){
+    if(!pt || pt[1] == null) return;
+    var spd = speedByTs[pt[0]];
+    if(spd == null) return;
+    counts[windRoseSectorIndex(pt[1])][windRoseSpeedBinIndex(spd)]++;
+    total++;
+  });
+  return { counts: counts, total: total };
+}
+
+function renderWindDir(){
+  var cc = chromeColors();
+  var unit = SYSTEMS[currentSystem].wind;
+  var hasData = windRoseCounts != null && windRoseTotal > 0;
+  var petalSeries = [];
+  for(var b=0; b<5; b++){
+    petalSeries.push({
+      type: 'bar', coordinateSystem: 'polar', polarIndex: 0, stack: 'rose',
+      name: windRoseSpeedBinLabel(b, unit),
+      itemStyle: { color: WIND_ROSE_COLORS[b] },
+      data: WIND_ROSE_DIRS.map(function(_, sector){
+        if(!hasData) return 0;
+        return Math.round((windRoseCounts[sector][b] / windRoseTotal) * 1000) / 10;
+      })
+    });
+  }
+  ch('gWindDir').setOption({
+    graphic: [
+      { type: 'text', left: 'center', top: '10%', style: { text: 'Wind Direction', fill: cc.label, fontSize: 14, fontWeight: 700 } },
+      { type: 'text', left: 'center', top: '92%', style: { text: hasData ? 'Last 24h' : 'No recent data', fill: cc.tick, fontSize: 10 } }
+    ],
+    tooltip: {
+      trigger: 'item',
+      formatter: function(params){
+        return params.seriesName == null ? '' : (params.seriesName + ' ' + unit + ' from ' + params.name + ': ' + params.value + '%');
+      }
+    },
+    angleAxis: {
+      type: 'category', polarIndex: 0, data: WIND_ROSE_DIRS, startAngle: 90, clockwise: true,
+      axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false }, axisLabel: { show: false }
+    },
+    radiusAxis: {
+      polarIndex: 0, min: 0,
+      axisLine: { show: false }, axisTick: { show: false }, axisLabel: { show: false },
+      splitLine: { show: true, lineStyle: { color: cc.tick, width: 1.5 } }, splitNumber: 3
+    },
+    polar: { center: ['50%','58%'], radius: '58%' },
+    series: petalSeries.concat([{
+      /* decorative outer ring — same static compass ring as stage 1 */
+      type: 'gauge', min: 0, max: 360, startAngle: 90, endAngle: -270, clockwise: true,
+      splitNumber: 8, radius: '90%', center: ['50%','58%'],
+      axisLine: { lineStyle: { width: 18, color: windDirRing } },
+      axisTick: { show: true, lineStyle: { color: cc.tick } },
+      splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+      axisLabel: {
+        distance: 25, fontSize: 12, color: cc.label,
+        formatter: function(v){ return ['N','NE','E','SE','S','SW','W','NW','N'][Math.round(v/45)] || ''; }
+      },
+      pointer: { show: false },
+      anchor: { show: false },
+      title: { show: false },
+      detail: { show: false },
+      data: [{ value: 0, name: 'Wind Direction' }]
+    }])
+  });
+}
+
+/* ===================== 4. Barometer ===================== */
 var baroBands = [[940,970,'#ff00ff'],[970,990,'#f8d747'],[990,1010,'#007fff'],[1010,1030,'#2e8b57'],[1030,1060,'#ff6347']];
 var baroRing = baroBands.map(function(b){ return [(b[1]-940)/120, b[2]]; });
 function renderBaro(current, low, high){
@@ -374,7 +493,7 @@ function renderBaro(current, low, high){
   });
 }
 
-/* ===================== 4. Rainfall ===================== */
+/* ===================== 5. Rainfall ===================== */
 function rainNiceMax(mm){
   var base = 50;
   if(mm==null || isNaN(mm) || mm <= base*0.8) return base;
@@ -401,7 +520,7 @@ function renderRain(dayMm){
   });
 }
 
-/* ===================== 5. UVI ===================== */
+/* ===================== 6. UVI ===================== */
 function uvColor(v){
   if(v==null) return '#8c9a95';
   if(v <= 2)  return '#299501';
@@ -430,7 +549,7 @@ function renderUvi(uv){
   });
 }
 
-/* ===================== 6. Humidity =====================
+/* ===================== 7. Humidity =====================
    No precedent elsewhere on the site for a continuous humidity scale —
    this banding (Dry / Comfortable / Humid / Very Humid) is a new
    convention built from the existing palette tokens, not pulled from
@@ -462,7 +581,7 @@ function renderHumid(pct){
   });
 }
 
-/* ===================== 7. Dew Point =====================
+/* ===================== 8. Dew Point =====================
    Same caveat as Humidity — standard meteorological comfort
    thresholds, not an existing site convention. */
 var DEW_MIN = -10, DEW_MAX = 30;
@@ -495,7 +614,7 @@ function renderDew(c){
   });
 }
 
-/* ===================== 8. Air Quality =====================
+/* ===================== 9. Air Quality =====================
    Headline figure is PM2.5's RealAQI (loop.json's pm25_RealAQI_co2) —
    the standard pollutant most AQI summaries lead with. Band cut points
    (50/100/150) are common round AQI thresholds, not figures confirmed
@@ -531,6 +650,7 @@ function renderAq(aqi){
 function renderAll(d){
   renderTemp(d.outTemp);
   renderWind(d.windSpeed, d.windGust);
+  renderWindDir();
   renderBaro(d.barometer, d.baroDayMin, d.baroDayMax);
   renderRain(d.dayRain);
   renderUvi(d.uv);
@@ -544,8 +664,10 @@ function renderAll(d){
    barometer high/low context (loop.json doesn't carry those). */
 var LOOP_JSON_URL = './jsondata/loop.json';
 var ARCHIVE_JSON_URL = './jsondata/archive.json';
+var CHARTS_JSON_URL = './charts/json/charts.json';
 var LOOP_POLL_MS = 15 * 1000;
 var ARCHIVE_POLL_MS = 60 * 1000;
+var CHARTS_POLL_MS = 60 * 60 * 1000;
 
 var liveValues = { outTemp:null, windSpeed:null, windGust:null, barometer:null, dayRain:null, uv:null, outHumidity:null, dewpoint:null, aqi:null, baroDayMin:null, baroDayMax:null };
 
@@ -601,6 +723,28 @@ function pollArchive(){
     .catch(function(e){
       console.warn('SǢL gauges: archive.json poll failed —', e.message);
     });
+}
+
+/* charts.json is the same batch-generated file charts.html reads — a
+   periodically-regenerated file, not a push stream — so this polls it
+   on the same hourly cadence charts.html uses rather than loop.json's
+   15s cadence, which would just refetch an unchanged file. */
+function pollWindRose(){
+  fetch(CHARTS_JSON_URL, {cache:'no-store'})
+    .then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+    .then(function(json){
+      var series = json && json[0] && json[0].chartPlot && json[0].chartPlot.series;
+      if(!series) throw new Error('Unexpected charts.json shape — no chartPlot.series found');
+      var built = buildWindRoseData(series.windDirHourly, series.windSpeedHourly);
+      windRoseCounts = built.counts;
+      windRoseTotal = built.total;
+    })
+    .catch(function(e){
+      console.warn('SǢL gauges: charts.json poll failed —', e.message);
+      windRoseCounts = null;
+      windRoseTotal = 0;
+    })
+    .finally(function(){ renderWindDir(); });
 }
 
 /* ===================== HTML includes (w3-include-html) =====================
@@ -685,6 +829,8 @@ setGaugesStatus('connecting');
 renderAll(liveValues);
 pollArchive();
 setInterval(pollArchive, ARCHIVE_POLL_MS);
+pollWindRose();
+setInterval(pollWindRose, CHARTS_POLL_MS);
 pollLoop();
 setInterval(pollLoop, LOOP_POLL_MS);
 
