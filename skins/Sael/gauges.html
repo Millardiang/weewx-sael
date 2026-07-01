@@ -429,7 +429,7 @@ function renderWindDir(){
   }
   ch('gWindDir').setOption({
     graphic: [
-      { type: 'text', left: 'center', top: '10%', style: { text: 'Wind Direction', fill: cc.label, fontSize: 14, fontWeight: 700 } },
+      { type: 'text', left: 'center', top: '10%', style: { text: 'Wind Vectors', fill: cc.label, fontSize: 14, fontWeight: 700 } },
       { type: 'text', left: 'center', top: '92%', style: { text: hasData ? 'Last 24h' : 'No recent data', fill: cc.tick, fontSize: 10 } }
     ],
     tooltip: {
@@ -463,7 +463,7 @@ function renderWindDir(){
       anchor: { show: false },
       title: { show: false },
       detail: { show: false },
-      data: [{ value: 0, name: 'Wind Direction' }]
+      data: [{ value: 0, name: 'Wind Vectors' }]
     }])
   });
 }
