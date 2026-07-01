@@ -159,18 +159,24 @@ body{
 }
 .cc-main{grid-column:1;grid-row:1 / span 2;border-radius:var(--bw-radius);}
 .cc-mini-grid{
-  grid-column:2;grid-row:1;
+  grid-column:2;grid-row:1 / span 2;
   display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  align-content:stretch;
 }
-.cc-wind{grid-column:2;grid-row:2;border-radius:var(--bw-radius-sm);}
 @media (max-width:767.98px){
   .cc-grid{grid-template-columns:1fr;grid-template-rows:auto;}
-  .cc-main, .cc-mini-grid, .cc-wind{grid-column:1;grid-row:auto;}
+  .cc-main, .cc-mini-grid{grid-column:1;grid-row:auto;}
 }
 .hero-now-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--bs-secondary-color);}
-.hero-temp{font-weight:700;font-size:clamp(50px,7.2vw,76px);line-height:1;}
-.hero-icon{width:74px;height:74px;flex-shrink:0;object-fit:contain;}
+.hero-top-row{border-bottom:1px solid var(--bs-border-color);padding-bottom:14px;}
+.hero-temp{font-weight:700;font-size:clamp(36px,4.6vw,52px);line-height:1;}
+.hero-icon{width:60px;height:60px;flex-shrink:0;object-fit:contain;}
 .hero-cond{font-size:17px;}
+.hero-wind{border-left:1px solid var(--bs-border-color);padding-left:16px;}
+.hero-wind .cc-stat-value{font-size:16px;}
+@media (max-width:575.98px){
+  .hero-wind{border-left:none;padding-left:0;border-top:1px solid var(--bs-border-color);padding-top:12px;width:100%;justify-content:space-between;}
+}
 .cc-stats-row{border-top:1px solid var(--bs-border-color);}
 .cc-stat{display:flex;flex-direction:column;gap:2px;}
 .cc-stat-label{font-size:11.5px;color:var(--bs-secondary-color);text-transform:uppercase;letter-spacing:.03em;}
@@ -180,7 +186,6 @@ body{
 .cc-mini-value{font-size:20px;font-weight:700;font-family:'JetBrains Mono',monospace;}
 .cc-mini-sub{font-size:11.5px;color:var(--bs-secondary-color);margin-top:2px;}
 .cc-mini-sub b{color:var(--bs-body-color);font-weight:600;}
-.cc-wind .cc-stat-value{font-size:16px;}
 .aqi-pill{
   display:inline-flex;align-items:center;gap:6px;
   font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
@@ -501,11 +506,32 @@ footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mon
   <div class="cc-grid">
     <div class="card cc-main p-4">
       <div class="hero-now-label mb-1">Right Now</div>
-      <div class="d-flex align-items-center gap-3">
-        <img class="hero-icon" id="heroIcon" src="https://cdn.meteocons.com/3.0.0-next.10/svg/fill/partly-cloudy-day.svg" alt="Cloudy" width="74" height="74">
-        <div class="hero-temp" id="heroTemp">20°</div>
+      <div class="hero-top-row d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <img class="hero-icon" id="heroIcon" src="https://cdn.meteocons.com/3.0.0-next.10/svg/fill/partly-cloudy-day.svg" alt="Cloudy" width="60" height="60">
+          <div class="hero-temp" id="heroTemp">20°</div>
+        </div>
+        <div class="hero-wind d-flex align-items-center gap-3">
+          <div class="wind-compass-mini">
+            <svg viewBox="0 0 80 80" class="wind-compass-mini-ring" aria-hidden="true">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="var(--bs-secondary-color)" stroke-width="6" opacity=".5"/>
+              <g id="windCompassMiniArrow" class="wind-compass-mini-arrow">
+                <path d="M40 24 L48 6 L32 6 Z" fill="var(--bw-danger)"/>
+              </g>
+            </svg>
+            <div class="wind-compass-mini-label">
+              <span id="gustDirHero">SW</span>
+              <span id="ccWindDirDeg"></span>
+            </div>
+          </div>
+          <div class="cc-wind-stats d-flex gap-3">
+            <div class="cc-stat"><span class="cc-stat-label">Wind</span><span class="cc-stat-value" id="ccWindSpeed">--</span></div>
+            <div class="cc-stat"><span class="cc-stat-label">Gust</span><span class="cc-stat-value" id="gustHero">19 mph</span></div>
+            <div class="cc-stat" style="display:none;"><span class="cc-stat-label">Dir</span><span class="cc-stat-value" id="ccGustDirDeg">227°</span></div>
+          </div>
+        </div>
       </div>
-      <div class="hero-cond mt-1" id="heroCond">Cloudy, light breeze from the SW</div>
+      <div class="hero-cond mt-2" id="heroCond">Cloudy, light breeze from the SW</div>
       <div class="cc-badges d-flex flex-wrap gap-2 mt-2">
         <span class="pollen-pill" id="pollenPillHero">🌿 Pollen: Very High</span>
         <span class="aqi-pill" id="aqiPillHero" style="display:none;"></span>
@@ -557,29 +583,6 @@ footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mon
         <div class="cc-mini-value" id="ccRainTotal">0 mm</div>
         <div class="cc-mini-sub" id="ccRainRate">0 mm/h</div>
         <div class="cc-mini-sub" id="rainNextRow">Next hour <b id="rainNextHero">20%</b></div>
-      </div>
-    </div>
-
-    <div class="card cc-wind p-3">
-      <div class="cc-mini-label">Wind</div>
-      <div class="cc-wind-row d-flex align-items-center gap-3 mt-1">
-        <div class="wind-compass-mini">
-          <svg viewBox="0 0 80 80" class="wind-compass-mini-ring" aria-hidden="true">
-            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--bs-secondary-color)" stroke-width="6" opacity=".5"/>
-            <g id="windCompassMiniArrow" class="wind-compass-mini-arrow">
-              <path d="M40 24 L48 6 L32 6 Z" fill="var(--bw-danger)"/>
-            </g>
-          </svg>
-          <div class="wind-compass-mini-label">
-            <span id="gustDirHero">SW</span>
-            <span id="ccWindDirDeg"></span>
-          </div>
-        </div>
-        <div class="cc-wind-stats d-flex gap-4">
-          <div class="cc-stat"><span class="cc-stat-label">Speed</span><span class="cc-stat-value" id="ccWindSpeed">--</span></div>
-          <div class="cc-stat"><span class="cc-stat-label">Gust</span><span class="cc-stat-value" id="gustHero">19 mph</span></div>
-          <div class="cc-stat"><span class="cc-stat-label">Dir</span><span class="cc-stat-value" id="ccGustDirDeg">227°</span></div>
-        </div>
       </div>
     </div>
   </div>
@@ -707,6 +710,6 @@ footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mon
      place, since cloudflared serves it as the very first hop. -->
 <script src="instruments.js?v=cbe51906"></script>
 <script src="forecast.js?v=bafdd194"></script>
-<script src="allseasons.js?v=af5b3daa"></script>
+<script src="allseasons.js?v=28b6784a"></script>
 </body>
 </html>
