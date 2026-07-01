@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Gauges — Steeple Claydon</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ===================== Birch palette — kept in sync by hand with the
+   other pages (climate.html / records.html / charts.html). Sixth copy
+   of this block now; this really should move to a shared style.css. */
+:root,
+[data-bs-theme="light"]{
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-lime:#C9DA1E;
+  --bw-sky:#6FB6DD;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-yellow:#D6BE4E;
+  --bw-radius:18px;
+  --bw-radius-sm:10px;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#2E5C84;
+  --bs-body-color:#F2F6FA;
+  --bs-secondary-color:#AFC8DE;
+  --bs-tertiary-bg:#1B3A57;
+  --bs-secondary-bg:#234870;
+  --bs-border-color:#2C5478;
+  --bs-card-bg:#16314D;
+  --bs-font-sans-serif:'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-bs-theme="dark"]{
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-sky:#6FB6DD;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-yellow:#D6BE4E;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#14181B;
+  --bs-body-color:#EAEFE9;
+  --bs-secondary-color:#8C9A95;
+  --bs-tertiary-bg:#222A2E;
+  --bs-secondary-bg:#2A3338;
+  --bs-border-color:#343E43;
+  --bs-card-bg:#1B2125;
+}
+
+body{
+  font-family:var(--bs-font-sans-serif);
+  padding-bottom:48px;
+  transition:background-color .25s ease, color .25s ease;
+}
+.font-mono{font-family:'JetBrains Mono','Courier New',monospace;}
+.card{border-radius:var(--bw-radius-sm); box-shadow:var(--bw-shadow);}
+
+/* ---------- Top bar (shared navbar.html look) ---------- */
+.brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
+.brand-mark .leaf{color:var(--bw-accent);}
+.brand-link{color:inherit;text-decoration:none;}
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.icon-btn svg{width:18px;height:18px;}
+#themeToggle{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);}
+#themeToggle:hover,#themeToggle:focus,#themeToggle.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+#themeMenu .dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12.5px;}
+#themeMenu .theme-check{width:14px;color:var(--bw-accent);}
+#themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
+.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;white-space:nowrap;}
+.nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+.navbar-toggler{border:none;padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;}
+.navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
+.navbar-toggler-icon{
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F2F6FA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+@media (max-width:767.98px){
+  .navbar-collapse{margin-top:14px;}
+  .navbar-collapse .dropdown,
+  .navbar-collapse .nav-btn,
+  .navbar-collapse .unit-select{width:100%;}
+  .navbar-collapse .nav-btn{text-align:left;}
+  .navbar-collapse .dropdown-menu{position:static;width:100%;margin-top:4px;}
+}
+/* See navbar.html / climate.html for the full rationale on this
+   landscape-phone override — kept identical here for consistency. */
+@media (orientation:landscape) and (max-width:926px){
+  .navbar-expand-md .navbar-collapse{display:none !important;}
+  .navbar-expand-md .navbar-collapse.show{display:flex !important;}
+  .navbar-expand-md .navbar-toggler{display:block !important;}
+}
+.unit-select{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;letter-spacing:.03em;
+  color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bs-body-color);
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23E8EEF5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+.unit-select:focus{color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);border-color:var(--bw-accent);box-shadow:0 0 0 .25rem rgba(232,163,61,.25);}
+.unit-select option{color:#000;background-color:#fff;}
+
+.page-title{font-size:32px;font-weight:700;margin:0 0 4px;}
+.page-sub{color:var(--bs-secondary-color);font-size:15px;margin-bottom:4px;}
+.live-status-wrap{position:relative;display:inline-flex;width:8px;height:8px;flex-shrink:0;}
+#gaugesStatusDot{width:8px;height:8px;border-radius:50%;display:block;background:var(--bs-secondary-color);}
+
+/* ---------- Gauge cards ---------- */
+.gauge-card{display:flex;flex-direction:column;align-items:center;padding:14px 10px 18px;height:100%;}
+.gauge-wrap{width:100%;max-width:280px;aspect-ratio:1/1.15;}
+.gauge-wrap > div{width:100%;height:100%;}
+
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR — shared with index.html's other secondary pages. Not
+     index.html itself, which has different nav content (see
+     navbar.html's own header comment). -->
+<div w3-include-html="navbar.html"></div>
+
+<div class="container-xl">
+  <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2 mt-1">
+    <div>
+      <h1 class="page-title">Gauges</h1>
+      <p class="page-sub mb-0">Live instrument dials, Steeple Claydon, Buckinghamshire.</p>
+    </div>
+    <div class="font-mono small d-flex align-items-center gap-2" style="color:var(--bs-secondary-color);">
+      <span class="live-status-wrap"><span id="gaugesStatusDot" title="Connecting…"></span></span>
+      <span id="gaugesStatusLabel">CONNECTING</span> · UPDATED <span id="gaugesClock">--:--:--</span>
+    </div>
+  </div>
+
+  <div id="gaugesErr" class="alert alert-danger mt-3" style="display:none;"></div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gTemp"></div></div></div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gWind"></div></div></div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gBaro"></div></div></div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gRain"></div></div></div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gUvi"></div></div></div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gHumid"></div></div></div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gDew"></div></div></div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-4">
+      <div class="card gauge-card h-100"><div class="gauge-wrap"><div id="gAq"></div></div></div>
+    </div>
+  </div>
+
+  <p class="page-sub mt-3" style="font-size:12px;font-style:italic;">
+    Wind Rose isn't on this page yet — its dial design is still being worked out.
+    Air Quality uses PM2.5's RealAQI figure as the headline index; Humidity and Dew Point color bands
+    are general comfort-scale conventions, not figures pulled from elsewhere on this site.
+  </p>
+
+  <footer class="text-center py-3">SǢL — Gauges</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<script>
+/* ===================== Unit conversion (mirrors climate.html / index.html) ===================== */
+function C2F(c){ return c*9/5+32; }
+function ms2mph(ms){ return ms*2.23694; }
+function ms2kmh(ms){ return ms*3.6; }
+function ms2kt(ms){ return ms*1.94384; }
+function mm2in(mm){ return mm*0.0393701; }
+function hpa2inhg(hpa){ return hpa*0.0295301; }
+function hpa2mmhg(hpa){ return hpa*0.750062; }
+function hpa2kpa(hpa){ return hpa/10; }
+function beaufort(ms){
+  var scale=[
+    [0.5,0],[1.5,1],[3.3,2],[5.5,3],[7.9,4],[10.7,5],[13.8,6],
+    [17.1,7],[20.7,8],[24.4,9],[28.4,10],[32.6,11],[999,12]
+  ];
+  for(var i=0;i<scale.length;i++){ if(ms<scale[i][0]) return scale[i][1]; }
+  return 12;
+}
+var SYSTEMS = {
+  uk:       {temp:'C', wind:'mph', rain:'mm', pressure:'hpa'},
+  us:       {temp:'F', wind:'mph', rain:'in', pressure:'inhg'},
+  metric:   {temp:'C', wind:'kmh', rain:'mm', pressure:'hpa'},
+  scandi:   {temp:'C', wind:'ms',  rain:'mm', pressure:'hpa'},
+  canada:   {temp:'C', wind:'kmh', rain:'mm', pressure:'kpa'},
+  aviation: {temp:'C', wind:'kt',  rain:'mm', pressure:'mmhg'},
+  beaufort: {temp:'C', wind:'bf',  rain:'mm', pressure:'hpa'}
+};
+var currentSystem = 'uk';
+
+function tempLabel(c, unit){ return unit==='F' ? Math.round(C2F(c)) + '°F' : Math.round(c) + '°C'; }
+function tempTick(c, unit){ return unit==='F' ? Math.round(C2F(c)) : Math.round(c); }
+function windLabel(ms, unit){
+  switch(unit){
+    case 'mph': return Math.round(ms2mph(ms)) + ' mph';
+    case 'kmh': return Math.round(ms2kmh(ms)) + ' km/h';
+    case 'kt':  return Math.round(ms2kt(ms)) + ' kt';
+    case 'bf':  return 'F' + beaufort(ms);
+    default:    return (Math.round(ms*10)/10) + ' m/s';
+  }
+}
+function windTick(ms, unit){
+  switch(unit){
+    case 'mph': return Math.round(ms2mph(ms));
+    case 'kmh': return Math.round(ms2kmh(ms));
+    case 'kt':  return Math.round(ms2kt(ms));
+    case 'bf':  return beaufort(ms);
+    default:    return ms;
+  }
+}
+function pressureLabel(hpa, unit){
+  switch(unit){
+    case 'inhg': return (Math.round(hpa2inhg(hpa)*100)/100) + ' inHg';
+    case 'mmhg': return Math.round(hpa2mmhg(hpa)) + ' mmHg';
+    case 'kpa':  return (Math.round(hpa2kpa(hpa)*10)/10) + ' kPa';
+    default:     return Math.round(hpa) + ' hPa';
+  }
+}
+function pressureTick(hpa, unit){
+  switch(unit){
+    case 'inhg': return Math.round(hpa2inhg(hpa)*10)/10;
+    case 'mmhg': return Math.round(hpa2mmhg(hpa));
+    case 'kpa':  return Math.round(hpa2kpa(hpa)*10)/10;
+    default:     return Math.round(hpa);
+  }
+}
+function rainLabel(mm, unit){ return unit==='in' ? (Math.round(mm2in(mm)*100)/100) + ' in' : (Math.round(mm*10)/10) + ' mm'; }
+function rainTick(mm, unit){ return unit==='in' ? Math.round(mm2in(mm)*10)/10 : Math.round(mm); }
+
+/* ===================== Chart instances ===================== */
+var charts = {};
+function ch(id){
+  if(!charts[id]) charts[id] = echarts.init(document.getElementById(id));
+  return charts[id];
+}
+window.addEventListener('resize', function(){
+  Object.keys(charts).forEach(function(id){ charts[id].resize(); });
+});
+
+/* ===================== Theme-aware gauge chrome =====================
+   ECharts' own gauge defaults (tick marks, split lines, axis numbers)
+   assume a white background and render too faint to read against this
+   site's dark cards in both the "light" and "dark" themes. Pull real
+   colors from the page's own CSS variables instead of hardcoding a
+   single gray that only half-works in one theme. */
+function chromeColors(){
+  var cs = getComputedStyle(document.documentElement);
+  return {
+    tick: (cs.getPropertyValue('--bs-secondary-color') || '#AFC8DE').trim(),
+    label: (cs.getPropertyValue('--bs-body-color') || '#F2F6FA').trim()
+  };
+}
+
+/* ===================== Temperature color ramp =====================
+   Matches reimagine.js/allseasons.js's TEMP_COLOR_STOPS exactly, so the
+   needle, anchor, and value text track the same blue→red ramp as the
+   rest of the site rather than sitting at ECharts' flat default color. */
+var TEMP_COLOR_STOPS = [
+  [-10, [91,127,227]], [0, [79,168,208]], [10, [79,184,155]], [18, [111,184,90]],
+  [24, [201,178,62]], [30, [224,138,61]], [36, [216,90,61]], [42, [184,48,42]]
+];
+function tempColor(c){
+  if(c==null) return '#8c9a95';
+  var stops = TEMP_COLOR_STOPS;
+  if(c <= stops[0][0]){ var s=stops[0][1]; return 'rgb('+s[0]+','+s[1]+','+s[2]+')'; }
+  if(c >= stops[stops.length-1][0]){ var e=stops[stops.length-1][1]; return 'rgb('+e[0]+','+e[1]+','+e[2]+')'; }
+  for(var i=0;i<stops.length-1;i++){
+    var t0=stops[i][0], c0=stops[i][1], t1=stops[i+1][0], c1=stops[i+1][1];
+    if(c>=t0 && c<=t1){
+      var f=(c-t0)/(t1-t0);
+      var r=Math.round(c0[0]+(c1[0]-c0[0])*f), g=Math.round(c0[1]+(c1[1]-c0[1])*f), b=Math.round(c0[2]+(c1[2]-c0[2])*f);
+      return 'rgb('+r+','+g+','+b+')';
+    }
+  }
+}
+
+/* ===================== 1. Temperature ===================== */
+var tempRing = [
+  [0.1,'rgb(91,127,227)'],[0.2,'rgb(86,143,219)'],[0.3,'rgb(79,170,203)'],
+  [0.4,'rgb(79,181,166)'],[0.5,'rgb(99,184,114)'],[0.6,'rgb(171,180,71)'],
+  [0.7,'rgb(220,145,61)'],[0.8,'rgb(216,90,61)'],[0.9,'rgb(184,48,42)'],[1,'rgb(184,48,42)']
+];
+function renderTemp(c){
+  var cc = chromeColors();
+  var col = tempColor(c);
+  var unit = SYSTEMS[currentSystem].temp;
+  ch('gTemp').setOption({
+    series: [{
+      type: 'gauge', min: -20, max: 50, splitNumber: 7, radius: '90%', center: ['50%','58%'],
+      progress: { show: true, width: 18 },
+      axisLine: { lineStyle: { width: 18, color: tempRing } },
+      axisTick: { show: true, lineStyle: { color: cc.tick } },
+      splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+      axisLabel: { distance: 25, fontSize: 12, color: cc.label, formatter: function(v){ return tempTick(v, unit) + '°'; } },
+      pointer: { itemStyle: { color: col } },
+      anchor: { show: true, showAbove: true, size: 18, itemStyle: { color: col, borderWidth: 4, borderColor: col } },
+      title: { show: true, fontSize: 14, color: cc.label, offsetCenter: [0, '-117%'] },
+      detail: { valueAnimation: true, fontSize: 26, offsetCenter: [0, '70%'], color: col, formatter: function(v){ return tempLabel(v, unit); } },
+      data: [{ value: c==null ? -20 : Math.round(c*10)/10, name: 'Temperature' }]
+    }]
+  });
+}
+
+/* ===================== 2. Wind speed + gust ===================== */
+var windRanges = [0,0.3,1.5,3.3,5.4,7.9,10.7,13.8,17.1,20.7,24.4,28.4,32.6,36.0];
+var windColors = ['#85a3aa','#7e98bb','#6e90d0','#0f94a7','#39a239','#c2863e','#c8420d','#d20032','#af5088','#754a92','#45698d','#c1fc77','#f1ff6c'];
+var windRing = windRanges.slice(1).map(function(t,i){ return [t/36, windColors[i]]; });
+function renderWind(speedMs, gustMs){
+  var cc = chromeColors();
+  var unit = SYSTEMS[currentSystem].wind;
+  ch('gWind').setOption({
+    graphic: [{ type: 'text', left: 'center', top: '10%', style: { text: 'Wind', fill: cc.label, fontSize: 14, fontWeight: 700 } }],
+    series: [
+      {
+        type: 'gauge', name: 'Speed', min: 0, max: 36, splitNumber: 6, radius: '90%', center: ['50%','58%'],
+        axisLine: { lineStyle: { width: 18, color: windRing } },
+        axisTick: { show: true, lineStyle: { color: cc.tick } },
+        splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+        axisLabel: { distance: 25, fontSize: 11, color: cc.label, formatter: function(v){ return windTick(v, unit); } },
+        pointer: { width: 6, length: '70%', itemStyle: { color: '#5EE6F5' } },
+        anchor: { show: true, showAbove: true, size: 14, itemStyle: { color: '#5EE6F5', borderWidth: 0 } },
+        title: { show: true, fontSize: 13, offsetCenter: ['-38%', '78%'], color: '#5EE6F5' },
+        detail: { valueAnimation: true, fontSize: 18, offsetCenter: ['-38%', '95%'], color: '#5EE6F5', formatter: function(v){ return windLabel(v, unit); } },
+        data: [{ value: speedMs==null ? 0 : Math.round(speedMs*10)/10, name: 'Speed' }]
+      },
+      {
+        type: 'gauge', name: 'Gust', min: 0, max: 36, radius: '90%', center: ['50%','58%'],
+        axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false }, axisLabel: { show: false },
+        pointer: { width: 5, length: '50%', itemStyle: { color: '#FFB347' } },
+        anchor: { show: true, showAbove: true, size: 11, itemStyle: { color: '#FFB347', borderWidth: 0 } },
+        title: { show: true, fontSize: 13, offsetCenter: ['38%', '78%'], color: '#FFB347' },
+        detail: { valueAnimation: true, fontSize: 18, offsetCenter: ['38%', '95%'], color: '#FFB347', formatter: function(v){ return windLabel(v, unit); } },
+        data: [{ value: gustMs==null ? 0 : Math.round(gustMs*10)/10, name: 'Gust' }]
+      }
+    ]
+  });
+}
+
+/* ===================== 3. Barometer ===================== */
+var baroBands = [[940,970,'#ff00ff'],[970,990,'#f8d747'],[990,1010,'#007fff'],[1010,1030,'#2e8b57'],[1030,1060,'#ff6347']];
+var baroRing = baroBands.map(function(b){ return [(b[1]-940)/120, b[2]]; });
+function renderBaro(current, low, high){
+  var cc = chromeColors();
+  var unit = SYSTEMS[currentSystem].pressure;
+  ch('gBaro').setOption({
+    graphic: [{ type: 'text', left: 'center', top: '10%', style: { text: 'Barometer', fill: cc.label, fontSize: 14, fontWeight: 700 } }],
+    series: [
+      {
+        type: 'gauge', name: 'Pressure', min: 940, max: 1060, splitNumber: 6, radius: '90%', center: ['50%','58%'],
+        axisLine: { lineStyle: { width: 18, color: baroRing } },
+        axisTick: { show: true, lineStyle: { color: cc.tick } },
+        splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+        axisLabel: { distance: 25, fontSize: 11, color: cc.label, formatter: function(v){ return pressureTick(v, unit); } },
+        pointer: { width: 6, length: '65%', itemStyle: { color: '#5EE6F5' } },
+        anchor: { show: true, showAbove: true, size: 16, itemStyle: { color: '#5EE6F5', borderWidth: 0 } },
+        title: { show: false },
+        detail: { valueAnimation: true, fontSize: 22, offsetCenter: [0, '95%'], color: '#5EE6F5', formatter: function(v){ return pressureLabel(v, unit); } },
+        data: [{ value: current==null ? 1013 : Math.round(current*10)/10, name: 'Barometer' }]
+      }
+    ]
+  });
+}
+
+/* ===================== 4. Rainfall ===================== */
+function rainNiceMax(mm){
+  var base = 50;
+  if(mm==null || isNaN(mm) || mm <= base*0.8) return base;
+  return Math.ceil((mm+10)/10)*10;
+}
+function renderRain(dayMm){
+  var cc = chromeColors();
+  var unit = SYSTEMS[currentSystem].rain;
+  var max = rainNiceMax(dayMm);
+  ch('gRain').setOption({
+    series: [{
+      type: 'gauge', min: 0, max: max, splitNumber: 5, radius: '90%', center: ['50%','58%'],
+      progress: { show: true, width: 18, itemStyle: { color: '#6FB6DD' } },
+      axisLine: { lineStyle: { width: 18, color: [[1, 'rgba(111,182,221,0.25)']] } },
+      axisTick: { show: true, lineStyle: { color: cc.tick } },
+      splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+      axisLabel: { distance: 25, fontSize: 12, color: cc.label, formatter: function(v){ return rainTick(v, unit); } },
+      pointer: { width: 6, length: '65%', itemStyle: { color: '#6FB6DD' } },
+      anchor: { show: true, showAbove: true, size: 16, itemStyle: { color: '#6FB6DD', borderWidth: 0 } },
+      title: { show: true, fontSize: 14, color: cc.label, offsetCenter: [0, '-117%'] },
+      detail: { valueAnimation: true, fontSize: 26, offsetCenter: [0, '70%'], color: '#6FB6DD', formatter: function(v){ return rainLabel(v, unit); } },
+      data: [{ value: dayMm==null ? 0 : Math.round(dayMm*10)/10, name: 'Rainfall' }]
+    }]
+  });
+}
+
+/* ===================== 5. UVI ===================== */
+function uvColor(v){
+  if(v==null) return '#8c9a95';
+  if(v <= 2)  return '#299501';
+  if(v <= 5)  return '#F7E400';
+  if(v <= 7)  return '#F85900';
+  if(v <= 10) return '#D8001D';
+  return '#6B49C8';
+}
+var uviRing = [[2/14,'#299501'],[5/14,'#F7E400'],[7/14,'#F85900'],[10/14,'#D8001D'],[1,'#6B49C8']];
+function renderUvi(uv){
+  var cc = chromeColors();
+  var col = uvColor(uv);
+  ch('gUvi').setOption({
+    series: [{
+      type: 'gauge', min: 0, max: 14, splitNumber: 7, radius: '90%', center: ['50%','58%'],
+      axisLine: { lineStyle: { width: 18, color: uviRing } },
+      axisTick: { show: true, lineStyle: { color: cc.tick } },
+      splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+      axisLabel: { distance: 25, fontSize: 12, color: cc.label },
+      pointer: { width: 6, length: '65%', itemStyle: { color: col } },
+      anchor: { show: true, showAbove: true, size: 16, itemStyle: { color: col, borderWidth: 0 } },
+      title: { show: true, fontSize: 14, color: cc.label, offsetCenter: [0, '-117%'] },
+      detail: { valueAnimation: true, fontSize: 26, offsetCenter: [0, '70%'], color: col, formatter: '{value}' },
+      data: [{ value: uv==null ? 0 : Math.round(uv*10)/10, name: 'UVI' }]
+    }]
+  });
+}
+
+/* ===================== 6. Humidity =====================
+   No precedent elsewhere on the site for a continuous humidity scale —
+   this banding (Dry / Comfortable / Humid / Very Humid) is a new
+   convention built from the existing palette tokens, not pulled from
+   established site logic. */
+function humidColor(v){
+  if(v==null) return '#8c9a95';
+  if(v <= 30) return '#E8A33D';
+  if(v <= 60) return '#5BBB8A';
+  if(v <= 80) return '#6FB6DD';
+  return '#E36B57';
+}
+var humidRing = [[0.3,'#E8A33D'],[0.6,'#5BBB8A'],[0.8,'#6FB6DD'],[1,'#E36B57']];
+function renderHumid(pct){
+  var cc = chromeColors();
+  var col = humidColor(pct);
+  ch('gHumid').setOption({
+    series: [{
+      type: 'gauge', min: 0, max: 100, splitNumber: 5, radius: '90%', center: ['50%','58%'],
+      axisLine: { lineStyle: { width: 18, color: humidRing } },
+      axisTick: { show: true, lineStyle: { color: cc.tick } },
+      splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+      axisLabel: { distance: 25, fontSize: 12, color: cc.label, formatter: function(v){ return v + '%'; } },
+      pointer: { width: 6, length: '65%', itemStyle: { color: col } },
+      anchor: { show: true, showAbove: true, size: 16, itemStyle: { color: col, borderWidth: 0 } },
+      title: { show: true, fontSize: 14, color: cc.label, offsetCenter: [0, '-117%'] },
+      detail: { valueAnimation: true, fontSize: 26, offsetCenter: [0, '70%'], color: col, formatter: '{value}%' },
+      data: [{ value: pct==null ? 0 : Math.round(pct), name: 'Humidity' }]
+    }]
+  });
+}
+
+/* ===================== 7. Dew Point =====================
+   Same caveat as Humidity — standard meteorological comfort
+   thresholds, not an existing site convention. */
+var DEW_MIN = -10, DEW_MAX = 30;
+function dewColor(v){
+  if(v==null) return '#8c9a95';
+  if(v <= 10) return '#5BBB8A';
+  if(v <= 16) return '#6FB6DD';
+  if(v <= 20) return '#E8A33D';
+  return '#E36B57';
+}
+function dewFrac(v){ return (v - DEW_MIN) / (DEW_MAX - DEW_MIN); }
+var dewRing = [[dewFrac(10),'#5BBB8A'],[dewFrac(16),'#6FB6DD'],[dewFrac(20),'#E8A33D'],[1,'#E36B57']];
+function renderDew(c){
+  var cc = chromeColors();
+  var col = dewColor(c);
+  var unit = SYSTEMS[currentSystem].temp;
+  ch('gDew').setOption({
+    series: [{
+      type: 'gauge', min: DEW_MIN, max: DEW_MAX, splitNumber: 8, radius: '90%', center: ['50%','58%'],
+      axisLine: { lineStyle: { width: 18, color: dewRing } },
+      axisTick: { show: true, lineStyle: { color: cc.tick } },
+      splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+      axisLabel: { distance: 25, fontSize: 12, color: cc.label, formatter: function(v){ return tempTick(v, unit) + '°'; } },
+      pointer: { width: 6, length: '65%', itemStyle: { color: col } },
+      anchor: { show: true, showAbove: true, size: 16, itemStyle: { color: col, borderWidth: 0 } },
+      title: { show: true, fontSize: 14, color: cc.label, offsetCenter: [0, '-117%'] },
+      detail: { valueAnimation: true, fontSize: 26, offsetCenter: [0, '70%'], color: col, formatter: function(v){ return tempLabel(v, unit); } },
+      data: [{ value: c==null ? DEW_MIN : Math.round(c*10)/10, name: 'Dew Point' }]
+    }]
+  });
+}
+
+/* ===================== 8. Air Quality =====================
+   Headline figure is PM2.5's RealAQI (loop.json's pm25_RealAQI_co2) —
+   the standard pollutant most AQI summaries lead with. Band cut points
+   (50/100/150) are common round AQI thresholds, not figures confirmed
+   from this site's own aqDotClass() logic. */
+var AQ_MAX = 200;
+function aqColor(v){
+  if(v==null) return '#8c9a95';
+  if(v <= 50) return '#5BBB8A';
+  if(v <= 100) return '#D6BE4E';
+  if(v <= 150) return '#E36B57';
+  return '#6B49C8';
+}
+var aqRing = [[50/AQ_MAX,'#5BBB8A'],[100/AQ_MAX,'#D6BE4E'],[150/AQ_MAX,'#E36B57'],[1,'#6B49C8']];
+function renderAq(aqi){
+  var cc = chromeColors();
+  var col = aqColor(aqi);
+  ch('gAq').setOption({
+    series: [{
+      type: 'gauge', min: 0, max: AQ_MAX, splitNumber: 4, radius: '90%', center: ['50%','58%'],
+      axisLine: { lineStyle: { width: 18, color: aqRing } },
+      axisTick: { show: true, lineStyle: { color: cc.tick } },
+      splitLine: { length: 15, lineStyle: { width: 2, color: cc.tick } },
+      axisLabel: { distance: 25, fontSize: 12, color: cc.label },
+      pointer: { width: 6, length: '65%', itemStyle: { color: col } },
+      anchor: { show: true, showAbove: true, size: 16, itemStyle: { color: col, borderWidth: 0 } },
+      title: { show: true, fontSize: 14, color: cc.label, offsetCenter: [0, '-117%'] },
+      detail: { valueAnimation: true, fontSize: 26, offsetCenter: [0, '70%'], color: col, formatter: '{value}' },
+      data: [{ value: aqi==null ? 0 : Math.round(aqi), name: 'AQI' }]
+    }]
+  });
+}
+
+function renderAll(d){
+  renderTemp(d.outTemp);
+  renderWind(d.windSpeed, d.windGust);
+  renderBaro(d.barometer, d.baroDayMin, d.baroDayMax);
+  renderRain(d.dayRain);
+  renderUvi(d.uv);
+  renderHumid(d.outHumidity);
+  renderDew(d.dewpoint);
+  renderAq(d.aqi);
+}
+
+/* ===================== Live data polling =====================
+   loop.json for current readings, archive.json for today's
+   barometer high/low context (loop.json doesn't carry those). */
+var LOOP_JSON_URL = './jsondata/loop.json';
+var ARCHIVE_JSON_URL = './jsondata/archive.json';
+var LOOP_POLL_MS = 15 * 1000;
+var ARCHIVE_POLL_MS = 60 * 1000;
+
+var liveValues = { outTemp:null, windSpeed:null, windGust:null, barometer:null, dayRain:null, uv:null, outHumidity:null, dewpoint:null, aqi:null, baroDayMin:null, baroDayMax:null };
+
+function setGaugesStatus(status){
+  var dot = document.getElementById('gaugesStatusDot');
+  var label = document.getElementById('gaugesStatusLabel');
+  if(status==='live'){ dot.style.background = 'var(--bw-good)'; label.textContent = 'LIVE'; }
+  else if(status==='stale'){ dot.style.background = 'var(--bw-accent)'; label.textContent = 'LIVE (stale)'; }
+  else if(status==='error'){ dot.style.background = 'var(--bw-danger)'; label.textContent = 'OFFLINE'; }
+  else { dot.style.background = 'var(--bs-secondary-color)'; label.textContent = 'CONNECTING'; }
+}
+
+function pollLoop(){
+  fetch(LOOP_JSON_URL, {cache:'no-store'})
+    .then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+    .then(function(j){
+      var o = j.observations || {};
+      liveValues.outTemp = o.outTemp ?? null;
+      liveValues.windSpeed = o.windSpeed ?? null;
+      liveValues.windGust = o.windGust ?? null;
+      liveValues.barometer = o.barometer ?? null;
+      if(o.dayRain != null) liveValues.dayRain = o.dayRain;
+      liveValues.uv = o.UV ?? null;
+      liveValues.outHumidity = o.outHumidity ?? null;
+      liveValues.dewpoint = o.dewpoint ?? null;
+      liveValues.aqi = o.pm25_RealAQI_co2 ?? null;
+      if(o.isDay != null) lastIsDay = o.isDay;
+
+      document.getElementById('gaugesClock').textContent = new Date().toLocaleTimeString('en-GB', {hour12:false});
+      setGaugesStatus('live');
+      document.getElementById('gaugesErr').style.display = 'none';
+      if(themeMode==='auto') applyTheme(); else renderAll(liveValues);
+    })
+    .catch(function(e){
+      console.warn('SǢL gauges: loop.json poll failed —', e.message);
+      setGaugesStatus(liveValues.outTemp!=null ? 'stale' : 'error');
+      var errEl = document.getElementById('gaugesErr');
+      errEl.textContent = 'Live data unavailable: ' + e.message;
+      errEl.style.display = '';
+      renderAll(liveValues);
+    });
+}
+
+function pollArchive(){
+  fetch(ARCHIVE_JSON_URL, {cache:'no-store'})
+    .then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+    .then(function(j){
+      liveValues.baroDayMin = (j.barom && j.barom.day_min != null) ? j.barom.day_min : null;
+      liveValues.baroDayMax = (j.barom && j.barom.day_max != null) ? j.barom.day_max : null;
+      if(j.rain && j.rain.day != null) liveValues.dayRain = j.rain.day;
+      renderAll(liveValues);
+    })
+    .catch(function(e){
+      console.warn('SǢL gauges: archive.json poll failed —', e.message);
+    });
+}
+
+/* ===================== HTML includes (w3-include-html) =====================
+   Same pattern as index.html's includeHTML() / climate.html's copy. */
+function includeHTML(callback){
+  var elements = document.querySelectorAll('[w3-include-html]');
+  var pending = elements.length;
+  if(pending === 0){ if(callback) callback(); return; }
+  elements.forEach(function(el){
+    var file = el.getAttribute('w3-include-html');
+    fetch(file)
+      .then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
+      .then(function(html){ el.innerHTML = html; el.removeAttribute('w3-include-html'); })
+      .catch(function(e){ console.warn('SǢL gauges: include failed for', file, '—', e.message); el.innerHTML = ''; })
+      .finally(function(){ pending--; if(pending === 0 && callback) callback(); });
+  });
+}
+
+function hideCurrentNavLink(){
+  var here = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  document.querySelectorAll('#navCollapse a.nav-btn[href]').forEach(function(a){
+    var target = a.getAttribute('href').split('?')[0].split('#')[0].toLowerCase();
+    if(target && target === here) a.style.display = 'none';
+  });
+}
+
+/* ===================== Theme: Auto / Light / Dark =====================
+   "Auto" follows the station's own real day/night flag (loop.json's
+   observations.isDay) — same as index.html's resolveAutoIsDay() — not
+   the OS/browser's prefers-color-scheme. That earlier version of this
+   block used matchMedia for 'auto' on every branch, which is why this
+   page could show light while index.html showed dark at the same
+   moment: matchMedia reflects the browser's color-scheme setting,
+   completely independent of whether it's actually day or night at the
+   station. matchMedia is now only the fallback used before loop.json
+   has loaded for the first time, exactly mirroring index.html. */
+var root = document.documentElement;
+var themeMode = localStorage.getItem('bircheswx-theme-mode') || 'auto';
+var lastIsDay = null;
+function resolveAutoIsDay(){
+  if(lastIsDay != null) return !!lastIsDay;
+  return !window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function resolveTheme(){
+  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (resolveAutoIsDay() ? 'light' : 'dark');
+}
+function applyTheme(){
+  root.setAttribute('data-bs-theme', resolveTheme());
+  syncThemeNavUI();
+  renderAll(liveValues);
+}
+function syncThemeNavUI(){
+  var sunIcon = document.getElementById('themeIconSun');
+  if(!sunIcon) return;
+  var resolved = resolveTheme();
+  sunIcon.style.display = resolved==='light' ? '' : 'none';
+  document.getElementById('themeIconMoon').style.display = resolved==='dark' ? '' : 'none';
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(function(el){
+    el.classList.toggle('active-theme', el.dataset.themeChoice===themeMode);
+  });
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+  if(themeMode==='auto') applyTheme();
+});
+
+// Same cross-tab fix as index.html — see that page's allseasons.js for
+// the full rationale. Without this, a theme change made on an
+// already-open tab/page never reaches another tab/page that was opened
+// earlier and is still sitting there, even though both read/write the
+// same 'bircheswx-theme-mode' key.
+window.addEventListener('storage', function(e){
+  if(e.key === 'bircheswx-theme-mode'){
+    themeMode = e.newValue || 'auto';
+    applyTheme();
+  }
+});
+
+applyTheme();
+
+/* ===================== Bootstrap ===================== */
+setGaugesStatus('connecting');
+renderAll(liveValues);
+pollArchive();
+setInterval(pollArchive, ARCHIVE_POLL_MS);
+pollLoop();
+setInterval(pollLoop, LOOP_POLL_MS);
+
+includeHTML(function(){
+  hideCurrentNavLink();
+  var unitSelect = document.getElementById('unitSystem');
+  if(unitSelect){
+    unitSelect.value = currentSystem;
+    unitSelect.addEventListener('change', function(e){
+      currentSystem = e.target.value;
+      renderAll(liveValues);
+    });
+  }
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(function(el){
+    el.addEventListener('click', function(){
+      themeMode = el.dataset.themeChoice;
+      localStorage.setItem('bircheswx-theme-mode', themeMode);
+      applyTheme();
+    });
+  });
+  syncThemeNavUI();
+});
+</script>
+</body>
+</html>

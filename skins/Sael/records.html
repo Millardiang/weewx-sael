@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Records — Re-ImaginedWX</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ===================== Birch palette mapped onto Bootstrap CSS vars =====================
+   Identical to birches.html — kept in sync by hand for now since this is
+   still a two-file prototype. If a third page gets added, this whole
+   :root/[data-bs-theme] block should move to a shared style.css instead
+   of being copy-pasted a third time. */
+:root,
+[data-bs-theme="light"]{
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-lime:#C9DA1E;
+  --bw-lime-soft:#2E331A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#2C5478;
+  --bw-instrument-headspace:#495E74;
+  --bw-instrument-border:#E8EEF5;
+  --bw-radius:18px;
+  --bw-radius-sm:10px;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#2E5C84;
+  --bs-body-color:#F2F6FA;
+  --bs-secondary-color:#AFC8DE;
+  --bs-tertiary-bg:#1B3A57;
+  --bs-secondary-bg:#234870;
+  --bs-border-color:#2C5478;
+  --bs-border-color-translucent:#2C5478;
+  --bs-card-bg:#16314D;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+  --bs-warning-rgb:232,163,61;
+  --bs-font-sans-serif:'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+[data-bs-theme="dark"]{
+  --bw-instrument-headspace:#222A2E;
+  --bw-instrument-border:#343E43;
+  --bw-accent:#E8A33D;
+  --bw-accent-soft:#3A2E1A;
+  --bw-sky:#6FB6DD;
+  --bw-sky-soft:#1C2E38;
+  --bw-good:#5BBB8A;
+  --bw-danger:#E36B57;
+  --bw-danger-soft:#3A2220;
+  --bw-yellow:#D6BE4E;
+  --bw-yellow-soft:#3A341A;
+  --bw-line:#343E43;
+  --bw-shadow:0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.5);
+
+  --bs-body-bg:#14181B;
+  --bs-body-color:#EAEFE9;
+  --bs-secondary-color:#8C9A95;
+  --bs-tertiary-bg:#222A2E;
+  --bs-secondary-bg:#2A3338;
+  --bs-border-color:#343E43;
+  --bs-border-color-translucent:#343E43;
+  --bs-card-bg:#1B2125;
+  --bs-emphasis-color:#FFFFFF;
+  --bs-primary:#E8A33D;
+  --bs-primary-rgb:232,163,61;
+  --bs-link-color:#E8A33D;
+  --bs-link-hover-color:#F2BC6B;
+}
+
+body{
+  font-family:var(--bs-font-sans-serif);
+  padding-bottom:48px;
+  transition:background-color .25s ease, color .25s ease;
+}
+.font-mono{font-family:'JetBrains Mono','Courier New',monospace;}
+.card{border-radius:var(--bw-radius-sm); box-shadow:var(--bw-shadow);}
+
+/* ---------- Top bar (same brand block as birches.html) ---------- */
+.brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
+.brand-mark .leaf{color:var(--bw-accent);}
+.brand-sub{font-size:11px;color:var(--bs-secondary-color);letter-spacing:.06em;}
+.brand-link{color:inherit;text-decoration:none;}
+
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.icon-btn svg{width:18px;height:18px;}
+#themeToggle{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);}
+#themeToggle:hover,#themeToggle:focus,#themeToggle.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+#themeMenu .dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12.5px;}
+#themeMenu .theme-check{width:14px;color:var(--bw-accent);}
+#themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
+
+/* Nav page links / Records dropdown trigger — same verified color pair
+   as #themeToggle (color:body-color / border:body-color / bg:tertiary-bg),
+   not Bootstrap's default btn-outline-secondary, which has a hardcoded
+   grey that doesn't track our theme vars (see continuity notes). */
+.nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;}
+.nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
+
+.navbar-toggler{border:1px solid var(--bs-body-color);padding:6px 10px;}
+.navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
+.navbar-toggler-icon{
+  background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23F2F6FA' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+@media (max-width:767.98px){
+  .navbar-collapse{margin-top:14px;}
+  .navbar-collapse .dropdown,
+  .navbar-collapse .nav-btn,
+  .navbar-collapse .unit-select{width:100%;}
+  .navbar-collapse .nav-btn{text-align:left;}
+  .navbar-collapse .dropdown-menu{position:static;width:100%;margin-top:4px;}
+}
+/* Force the hamburger to stay collapsed for phones in landscape too.
+   navbar-expand-md's own breakpoint is a plain min-width:768px, with no
+   regard for orientation — but common phones are wider than 768px once
+   rotated to landscape (up to ~926px on the largest current models),
+   so without this override, turning a phone sideways would swap straight
+   to the full desktop nav instead of staying collapsed. Tablets/desktops
+   in landscape are comfortably wider than 926px, so they're unaffected;
+   the orientation check (not just a width cap) is what keeps a tablet in
+   PORTRAIT — which can be narrower than 926px — from being caught by this
+   too, since portrait is excluded regardless of width.
+   !important on every rule here matches Bootstrap's own use of it for
+   these exact properties — without it, source order alone wouldn't
+   reliably win against Bootstrap's :min-width:768px; .navbar-collapse
+   rule once both media queries are simultaneously in effect. */
+@media (orientation:landscape) and (max-width:926px){
+  .navbar-expand-md .navbar-collapse{display:none !important;}
+  .navbar-expand-md .navbar-collapse.show{display:flex !important;}
+  .navbar-expand-md .navbar-toggler{display:block !important;}
+}
+.unit-select{
+  background-color:var(--bs-tertiary-bg);color:var(--bs-body-color);border-color:var(--bs-body-color);
+  border-radius:999px;font-size:14px;
+}
+.unit-select option{color:#000;background-color:#fff;}
+
+/* ---------- Records page ---------- */
+.records-page-title{font-size:32px;font-weight:700;margin:0 0 4px;}
+.records-page-sub{color:var(--bs-secondary-color);font-size:15px;margin-bottom:18px;}
+
+.records-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.records-tab{
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;
+  padding:9px 18px;border-radius:999px;border:1px solid var(--bs-border-color);
+  background-color:var(--bs-tertiary-bg);color:var(--bs-body-color);
+  cursor:pointer;transition:.15s;
+}
+.records-tab:hover{border-color:var(--bw-accent);}
+.records-tab.active{background-color:var(--bw-accent);color:#1B1407;border-color:var(--bw-accent);}
+
+.records-category-note{font-size:12.5px;color:var(--bs-secondary-color);margin:-6px 0 18px;font-style:italic;}
+
+.records-periods-row{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:14px;
+}
+.records-period-card{
+  background-color:var(--bs-tertiary-bg);border:1px solid var(--bw-instrument-border,var(--bs-border-color));
+  border-radius:12px;padding:16px 12px;text-align:center;
+}
+.records-period-label{
+  font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--bs-secondary-color);margin-bottom:12px;padding-bottom:8px;
+  border-bottom:1px solid var(--bs-border-color);
+}
+.records-grid{display:flex;flex-direction:column;gap:16px;}
+.records-label{font-size:12.5px;color:var(--bs-secondary-color);margin-bottom:3px;}
+.records-value{font-size:20px;font-weight:600;font-family:'JetBrains Mono',monospace;line-height:1.15;}
+.records-value-date{font-size:11px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+
+@media (max-width:900px){
+  .records-periods-row{grid-template-columns:repeat(3,1fr);}
+}
+@media (max-width:600px){
+  .records-periods-row{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:420px){
+  .records-periods-row{grid-template-columns:1fr;}
+}
+
+footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR — split out into navbar.html, shared with charts.html and
+     climate.html (not index.html, which has different nav content —
+     see navbar.html's own header comment). -->
+<div w3-include-html="navbar.html"></div>
+
+<div class="container-xl">
+  <h1 class="records-page-title">Weather Records</h1>
+  <p class="records-page-sub">Steeple Claydon, Buckinghamshire — trailing-window records derived from the station's all-time daily series.</p>
+
+  <div class="records-tabs" id="recordsTabs">
+    <button class="records-tab" data-cat="temperature">Temperature</button>
+    <button class="records-tab" data-cat="wind">Wind &amp; Gust</button>
+    <button class="records-tab" data-cat="rain">Rain &amp; Rain Rate</button>
+    <button class="records-tab" data-cat="barometer">Barometer</button>
+  </div>
+  <div class="records-category-note" id="recordsCategoryNote"></div>
+
+  <div class="card p-4 mb-4">
+    <div class="records-periods-row" id="recordsPeriodsRow"><!-- populated by renderRecordsPanel() --></div>
+  </div>
+
+  <footer class="text-center py-3">Re-ImaginedWX — Records</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
+<script>
+/* ===================== Unit conversion + formatting (mirrors birches.html) ===================== */
+const C2F = c => c*9/5+32;
+const ms2mph = ms => ms*2.23694;
+const ms2kmh = ms => ms*3.6;
+const ms2kt  = ms => ms*1.94384;
+const hpa2inhg = hpa => hpa*0.0295301;
+const hpa2mmhg = hpa => hpa*0.750062;
+const hpa2kpa  = hpa => hpa/10;
+const mm2in = mm => mm*0.0393701;
+
+function beaufort(ms){
+  const scale=[
+    [0.5,0,"Calm"],[1.5,1,"Light air"],[3.3,2,"Light breeze"],[5.5,3,"Gentle breeze"],
+    [7.9,4,"Moderate breeze"],[10.7,5,"Fresh breeze"],[13.8,6,"Strong breeze"],
+    [17.1,7,"Near gale"],[20.7,8,"Gale"],[24.4,9,"Strong gale"],[28.4,10,"Storm"],
+    [32.6,11,"Violent storm"],[999,12,"Hurricane"]
+  ];
+  for(const [max,f,label] of scale){ if(ms<max) return {force:f,label}; }
+  return {force:12,label:"Hurricane"};
+}
+
+const SYSTEMS = {
+  uk:       {temp:'C', wind:'mph', pressure:'hpa', rain:'mm'},
+  us:       {temp:'F', wind:'mph', pressure:'inhg', rain:'in'},
+  metric:   {temp:'C', wind:'kmh', pressure:'hpa', rain:'mm'},
+  scandi:   {temp:'C', wind:'ms',  pressure:'hpa', rain:'mm'},
+  canada:   {temp:'C', wind:'kmh', pressure:'kpa', rain:'mm'},
+  aviation: {temp:'C', wind:'kt',  pressure:'hpa', rain:'mm'},
+  beaufort: {temp:'C', wind:'bf',  pressure:'hpa', rain:'mm'},
+};
+
+function fmtTemp(c, unit){ return unit==='F' ? Math.round(C2F(c))+'°F' : Math.round(c)+'°C'; }
+function fmtWind(ms, unit){
+  switch(unit){
+    case 'mph': return Math.round(ms2mph(ms))+' mph';
+    case 'kmh': return Math.round(ms2kmh(ms))+' km/h';
+    case 'kt':  return Math.round(ms2kt(ms))+' kt';
+    case 'ms':  return (Math.round(ms*10)/10)+' m/s';
+    case 'bf': { const b=beaufort(ms); return 'F'+b.force+' · '+b.label; }
+    default: return Math.round(ms)+' m/s';
+  }
+}
+function fmtPressure(hpa, unit){
+  switch(unit){
+    case 'inhg': return (Math.round(hpa2inhg(hpa)*100)/100)+' inHg';
+    case 'mmhg': return Math.round(hpa2mmhg(hpa))+' mmHg';
+    case 'kpa':  return (Math.round(hpa2kpa(hpa)*10)/10)+' kPa';
+    default: return Math.round(hpa)+' hPa';
+  }
+}
+function fmtRain(mm, unit){ return unit==='in' ? (Math.round(mm2in(mm)*100)/100)+' in' : (Math.round(mm*10)/10)+' mm'; }
+
+let currentSystem = 'uk';
+
+/* ===================== Records data + period-slicing (ported from the
+   user's real chartTemperature.php — see birches.html for the long-form
+   rationale comment). Same technique, generalized across four observation
+   categories instead of just temperature, and across a whole page instead
+   of a homepage teaser tile. =====================
+
+   Confirmed real charts.json fields used here (from charts_json.tmpl):
+     Temperature: outTempMax / outTempMin / outTempAvg        (°C, daily)
+     Wind & Gust: windSpeedAvg / windSpeedMax / windGustMax    (m/s, daily — unit ASSUMED, see birches.html note)
+     Rain:        rain (daily total, mm)
+     Barometer:   baromMax / baromMin / baromAvg               (hPa, daily)
+
+   NOT used: "rainRate" — in charts_json.tmpl it's defined identically to
+   "rain" (both sum the daily total), so it can't supply a real rate
+   figure. "Wettest Day" (max single-day total within the period) is
+   shown instead, which is genuine, distinct data — not a substitute for
+   true rain-rate, just the closest honest thing available. */
+const RECORDS_JSON_URL = './charts/json/charts.json';
+const RECORDS_POLL_MS = 60*60*1000;
+let recordsSeries = null;
+
+const RECORDS_PERIODS = [
+  {key:'day',     label:'Day',      days:1},
+  {key:'week',    label:'Week',     days:7},
+  {key:'month',   label:'Month',    days:30},
+  {key:'year',    label:'Year',     days:365},
+  {key:'alltime', label:'All-time', days:Infinity},
+];
+
+const RECORDS_CATEGORIES = {
+  temperature: {
+    note: 'Daily high / low / average outdoor temperature.',
+    metrics: [
+      {label:'Highest', series:'outTempMax', agg:'max', fmt:(v,sys)=>fmtTemp(v, sys.temp), withDate:true},
+      {label:'Lowest',  series:'outTempMin', agg:'min', fmt:(v,sys)=>fmtTemp(v, sys.temp), withDate:true},
+      {label:'Average', series:'outTempAvg', agg:'avg', fmt:(v,sys)=>fmtTemp(v, sys.temp), withDate:false},
+    ],
+  },
+  wind: {
+    note: 'Average wind speed, highest sustained wind, and highest gust.',
+    metrics: [
+      {label:'Average Wind', series:'windSpeedAvg', agg:'avg', fmt:(v,sys)=>fmtWind(v, sys.wind), withDate:false},
+      {label:'Highest Wind',  series:'windSpeedMax', agg:'max', fmt:(v,sys)=>fmtWind(v, sys.wind), withDate:true},
+      {label:'Highest Gust',  series:'windGustMax',  agg:'max', fmt:(v,sys)=>fmtWind(v, sys.wind), withDate:true},
+    ],
+  },
+  rain: {
+    note: '"Highest Rate" isn\u2019t available — charts.json\u2019s rainRate field duplicates the daily total rather than a true rate. Showing Wettest Day instead.',
+    metrics: [
+      {label:'Total Rain',  series:'rain', agg:'sum', fmt:(v,sys)=>fmtRain(v, sys.rain), withDate:false},
+      {label:'Wettest Day', series:'rain', agg:'max', fmt:(v,sys)=>fmtRain(v, sys.rain), withDate:true},
+    ],
+  },
+  barometer: {
+    note: 'Daily high / low / average barometric pressure.',
+    metrics: [
+      {label:'Highest', series:'baromMax', agg:'max', fmt:(v,sys)=>fmtPressure(v, sys.pressure), withDate:true},
+      {label:'Lowest',  series:'baromMin', agg:'min', fmt:(v,sys)=>fmtPressure(v, sys.pressure), withDate:true},
+      {label:'Average', series:'baromAvg', agg:'avg', fmt:(v,sys)=>fmtPressure(v, sys.pressure), withDate:false},
+    ],
+  },
+};
+
+const VALID_CATS = Object.keys(RECORDS_CATEGORIES);
+function getInitialCategory(){
+  const url = new URL(window.location.href);
+  const t = url.searchParams.get('type');
+  return VALID_CATS.includes(t) ? t : 'temperature';
+}
+let currentCategory = getInitialCategory();
+
+async function fetchRecords(){
+  const res = await fetch(RECORDS_JSON_URL, {cache:'no-store'});
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const json = await res.json();
+  const series = json && json[0] && json[0].chartPlot && json[0].chartPlot.series;
+  if(!series) throw new Error('Unexpected charts.json shape — no chartPlot.series found');
+  return series;
+}
+async function pollRecords(){
+  try{
+    recordsSeries = await fetchRecords();
+  }catch(e){
+    console.warn('Re-ImaginedWX records: poll failed —', e.message);
+  }
+  renderRecordsPanel();
+}
+
+function recordsSlice(seriesArr, days){
+  if(!Array.isArray(seriesArr)) return [];
+  const valid = seriesArr.filter(pt => pt && pt[1] !== null && pt[1] !== undefined);
+  valid.sort((a,b)=>a[0]-b[0]);
+  const n = isFinite(days) ? Math.min(days, valid.length) : valid.length;
+  return n > 0 ? valid.slice(valid.length - n) : [];
+}
+function recordsAggregate(slice, agg){
+  if(!slice.length) return {value:null, date:null};
+  if(agg === 'max'){ let best=slice[0]; for(const pt of slice) if(pt[1] > best[1]) best=pt; return {value:best[1], date:best[0]}; }
+  if(agg === 'min'){ let best=slice[0]; for(const pt of slice) if(pt[1] < best[1]) best=pt; return {value:best[1], date:best[0]}; }
+  if(agg === 'sum'){ return {value: slice.reduce((s,pt)=>s+pt[1], 0), date:null}; }
+  return {value: slice.reduce((s,pt)=>s+pt[1], 0) / slice.length, date:null};
+}
+function recordsFmtDate(ts){
+  return ts==null ? '' : new Date(ts).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+}
+
+function renderRecordsPanel(){
+  const sys = SYSTEMS[currentSystem];
+  const category = RECORDS_CATEGORIES[currentCategory];
+
+  document.getElementById('recordsCategoryNote').textContent = category.note;
+  document.querySelectorAll('.records-tab').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.cat === currentCategory);
+  });
+
+  const row = document.getElementById('recordsPeriodsRow');
+  row.innerHTML = RECORDS_PERIODS.map(period => {
+    const tiles = category.metrics.map(metric => {
+      if(!recordsSeries){
+        return `<div class="records-tile"><div class="records-label">${metric.label}</div><div class="records-value">--</div></div>`;
+      }
+      const slice = recordsSlice(recordsSeries[metric.series], period.days);
+      const {value, date} = recordsAggregate(slice, metric.agg);
+      const valueHtml = value!=null ? metric.fmt(value, sys) : '--';
+      const dateHtml = (metric.withDate && date!=null) ? `<div class="records-value-date">${recordsFmtDate(date)}</div>` : '';
+      return `<div class="records-tile"><div class="records-label">${metric.label}</div><div class="records-value">${valueHtml}</div>${dateHtml}</div>`;
+    }).join('');
+    return `<div class="records-period-card"><div class="records-period-label">${period.label}</div><div class="records-grid">${tiles}</div></div>`;
+  }).join('');
+}
+
+document.querySelectorAll('.records-tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentCategory = btn.dataset.cat;
+    const url = new URL(window.location.href);
+    url.searchParams.set('type', currentCategory);
+    history.replaceState(null, '', url);
+    renderRecordsPanel();
+  });
+});
+
+/* ===================== HTML includes (w3-include-html) =====================
+   Same pattern/implementation as index.html's includeHTML() — see that
+   file's comment for the full rationale. navbar.html is the only
+   include on this page. */
+function includeHTML(callback){
+  const elements = document.querySelectorAll('[w3-include-html]');
+  let pending = elements.length;
+  if(pending === 0){ if(callback) callback(); return; }
+  elements.forEach(el => {
+    const file = el.getAttribute('w3-include-html');
+    fetch(file)
+      .then(res => {
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        return res.text();
+      })
+      .then(html => {
+        el.innerHTML = html;
+        el.removeAttribute('w3-include-html');
+      })
+      .catch(e => {
+        console.warn('Re-ImaginedWX records: include failed for', file, '—', e.message);
+        el.innerHTML = '';
+      })
+      .finally(() => {
+        pending--;
+        if(pending === 0 && callback) callback();
+      });
+  });
+}
+
+/* ===================== Theme: Auto / Light / Dark =====================
+   Was simplified from birches.html's version — this page had no
+   live.json feed to read isDay from, so Auto just followed the OS
+   preference (matchMedia). That's now fixed: a small, independent,
+   low-frequency loop.json poll exists purely to supply the real
+   isDay flag, matching index.html's resolveAutoIsDay() and the same
+   fix applied to climate.html/charts.html/almanac.html/gauges.html.
+   matchMedia is now only the fallback used before that first poll has
+   landed.
+
+   #themeMenu/#themeIconSun/#themeIconMoon all live inside navbar.html
+   now (a w3-include-html include), so applyTheme() is split in two:
+   the part that sets data-bs-theme on <html> has no nav dependency and
+   runs immediately below (no flash-of-wrong-theme regression from the
+   navbar split), while syncThemeNavUI() — the part that actually
+   touches nav elements — defensively no-ops until navbar.html has
+   landed, then gets called once more from includeHTML()'s callback to
+   backfill the icon/active-state once it's safe to. */
+const root = document.documentElement;
+let themeMode = localStorage.getItem('bircheswx-theme-mode') || 'auto';
+let lastIsDay = null;
+const LOOP_JSON_URL_FOR_THEME = './jsondata/loop.json';
+const THEME_ISDAY_POLL_MS = 5 * 60 * 1000;
+
+function resolveAutoIsDay(){
+  if(lastIsDay != null) return !!lastIsDay;
+  return !window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function resolveTheme(){
+  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (resolveAutoIsDay() ? 'light' : 'dark');
+}
+function applyTheme(){
+  root.setAttribute('data-bs-theme', resolveTheme());
+  syncThemeNavUI();
+}
+function syncThemeNavUI(){
+  const sunIcon = document.getElementById('themeIconSun');
+  if(!sunIcon) return; // navbar.html hasn't loaded yet — see includeHTML() callback below
+  const resolved = resolveTheme();
+  sunIcon.style.display = resolved==='light' ? '' : 'none';
+  document.getElementById('themeIconMoon').style.display = resolved==='dark' ? '' : 'none';
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.classList.toggle('active-theme', el.dataset.themeChoice===themeMode);
+  });
+}
+function pollIsDayForTheme(){
+  fetch(LOOP_JSON_URL_FOR_THEME, {cache:'no-store'})
+    .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+    .then(j => {
+      const o = (j && j.observations) || {};
+      if(o.isDay != null){
+        lastIsDay = o.isDay;
+        if(themeMode==='auto') applyTheme();
+      }
+    })
+    .catch(e => console.warn('Re-ImaginedWX records: loop.json poll (theme) failed —', e.message));
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+  if(themeMode==='auto') applyTheme();
+});
+window.addEventListener('storage', (e)=>{
+  if(e.key === 'bircheswx-theme-mode'){
+    themeMode = e.newValue || 'auto';
+    applyTheme();
+  }
+});
+applyTheme();
+pollIsDayForTheme();
+setInterval(pollIsDayForTheme, THEME_ISDAY_POLL_MS);
+
+/* ===================== Bootstrap ===================== */
+renderRecordsPanel();   // render once immediately with '--' placeholders
+pollRecords();
+setInterval(pollRecords, RECORDS_POLL_MS);
+
+// navbar.html has to be in the DOM before #unitSystem/#themeMenu exist
+// to attach listeners to, or sync their state — see includeHTML() above.
+includeHTML(() => {
+  // Defensive: navbar.html failing to load is the one realistic way
+  // #unitSystem wouldn't exist here — includeHTML()'s callback still
+  // fires on a failed include (so one missing file can't hang every
+  // other poll on the page), so this has to handle that case itself
+  // rather than assume the include always succeeded.
+  if(!document.getElementById('unitSystem')) return;
+  document.getElementById('unitSystem').addEventListener('change', e=>{
+    currentSystem = e.target.value;
+    renderRecordsPanel();
+  });
+  document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      themeMode = el.dataset.themeChoice;
+      localStorage.setItem('bircheswx-theme-mode', themeMode);
+      applyTheme();
+    });
+  });
+  syncThemeNavUI();
+});
+</script>
+</body>
+</html>

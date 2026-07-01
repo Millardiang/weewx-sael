@@ -1388,12 +1388,29 @@ document.querySelectorAll('.records-tab').forEach(b=>b.classList.toggle('active'
    colors); syncThemeNavUI() touches the nav's theme icon/menu and
    defensively no-ops until navbar.html has actually landed in the DOM —
    see includeHTML()'s callback below for where it gets called once that
-   happens. */
+   happens.
+
+   "Auto" now follows the station's own real day/night flag (loop.json's
+   observations.isDay) — same as index.html's resolveAutoIsDay() —
+   rather than the OS/browser's prefers-color-scheme, which had no
+   relation to whether it's actually day or night at the station. This
+   page has no other reason to fetch loop.json (its data comes from
+   charts.json), so a small, low-frequency poll exists purely to keep
+   this in sync with the rest of the site, matching the same approach
+   used on climate.html/gauges.html/almanac.html. matchMedia is only
+   the fallback used before that first poll has landed. */
 const root = document.documentElement;
 let themeMode = localStorage.getItem('bircheswx-theme-mode') || 'auto';
+let lastIsDay = null;
+const LOOP_JSON_URL_FOR_THEME = './jsondata/loop.json';
+const THEME_ISDAY_POLL_MS = 5 * 60 * 1000;
 
+function resolveAutoIsDay(){
+  if(lastIsDay != null) return !!lastIsDay;
+  return !window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
 function resolveTheme(){
-  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (resolveAutoIsDay() ? 'light' : 'dark');
 }
 function applyTheme(){
   root.setAttribute('data-bs-theme', resolveTheme());
@@ -1410,10 +1427,30 @@ function syncThemeNavUI(){
     el.classList.toggle('active-theme', el.dataset.themeChoice===themeMode);
   });
 }
+function pollIsDayForTheme(){
+  fetch(LOOP_JSON_URL_FOR_THEME, {cache:'no-store'})
+    .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+    .then(j => {
+      const o = (j && j.observations) || {};
+      if(o.isDay != null){
+        lastIsDay = o.isDay;
+        if(themeMode==='auto') applyTheme();
+      }
+    })
+    .catch(e => console.warn('Re-ImaginedWX charts: loop.json poll (theme) failed —', e.message));
+}
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
   if(themeMode==='auto') applyTheme();
 });
+window.addEventListener('storage', (e)=>{
+  if(e.key === 'bircheswx-theme-mode'){
+    themeMode = e.newValue || 'auto';
+    applyTheme();
+  }
+});
 applyTheme();
+pollIsDayForTheme();
+setInterval(pollIsDayForTheme, THEME_ISDAY_POLL_MS);
 
 /* ===================== Hide the current page's own nav link =====================
    Once navbar.html has loaded, hide whichever top-level nav button

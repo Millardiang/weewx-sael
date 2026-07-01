@@ -925,7 +925,7 @@ function render(){
   const stationLocation = todayObsArchive?.meta?.station_location;
   if(stationLocation){
     document.getElementById('pageLocationTitle').textContent = stationLocation;
-    document.title = `${stationLocation}`;
+    document.title = `DivumRI — ${stationLocation}`;
   }
 
   document.getElementById('heroTemp').textContent = fmtTemp(heroTempC, sys.temp);
@@ -1315,6 +1315,19 @@ document.querySelectorAll('#themeMenu .dropdown-item').forEach(el=>{
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
   if(themeMode==='auto') applyTheme();
+});
+
+// Each page only reads localStorage once, on its own load — without
+// this, picking a theme on one already-open tab/page never reaches
+// another tab/page that was opened earlier and is still sitting there,
+// even though both read/write the same 'bircheswx-theme-mode' key.
+// The 'storage' event only fires in OTHER documents than the one that
+// made the change, which is exactly the cross-tab sync this needs.
+window.addEventListener('storage', (e)=>{
+  if(e.key === 'bircheswx-theme-mode'){
+    themeMode = e.newValue || 'auto';
+    applyTheme();
+  }
 });
 
 applyTheme();

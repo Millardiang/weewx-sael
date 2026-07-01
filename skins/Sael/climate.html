@@ -8,9 +8,6 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* ===================== Birch palette — kept in sync by hand with the
-   other pages (birches.html / records.html / charts.html). Fourth copy
-   of this block now; this really should move to a shared style.css. */
 :root,
 [data-bs-theme="light"]{
   --bw-accent:#E8A33D;
@@ -58,10 +55,8 @@ body{
 .font-mono{font-family:'JetBrains Mono','Courier New',monospace;}
 .card{border-radius:var(--bw-radius-sm); box-shadow:var(--bw-shadow);}
 
-/* ---------- Top bar ---------- */
 .brand-mark{font-weight:700;font-size:22px;letter-spacing:.2px;}
 .brand-mark .leaf{color:var(--bw-accent);}
-.brand-sub{font-size:11px;color:var(--bs-secondary-color);letter-spacing:.06em;}
 .brand-link{color:inherit;text-decoration:none;}
 .icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
 .icon-btn svg{width:18px;height:18px;}
@@ -72,7 +67,6 @@ body{
 #themeMenu .dropdown-item.active-theme .theme-check::after{content:'✓';}
 .nav-btn{color:var(--bs-body-color);border-color:var(--bs-body-color);background-color:var(--bs-tertiary-bg);font-weight:600;font-size:15px;white-space:nowrap;}
 .nav-btn:hover,.nav-btn:focus,.nav-btn.show{color:var(--bs-body-color);border-color:var(--bw-accent);background-color:var(--bs-secondary-bg);}
-
 .navbar-toggler{border:none;padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;}
 .navbar-toggler[aria-expanded="true"]{display:inline-flex;align-items:center;justify-content:center;}
 .navbar-toggler:focus{box-shadow:0 0 0 .2rem rgba(232,163,61,.4);}
@@ -87,20 +81,6 @@ body{
   .navbar-collapse .nav-btn{text-align:left;}
   .navbar-collapse .dropdown-menu{position:static;width:100%;margin-top:4px;}
 }
-/* Force the hamburger to stay collapsed for phones in landscape too.
-   navbar-expand-md's own breakpoint is a plain min-width:768px, with no
-   regard for orientation — but common phones are wider than 768px once
-   rotated to landscape (up to ~926px on the largest current models),
-   so without this override, turning a phone sideways would swap straight
-   to the full desktop nav instead of staying collapsed. Tablets/desktops
-   in landscape are comfortably wider than 926px, so they're unaffected;
-   the orientation check (not just a width cap) is what keeps a tablet in
-   PORTRAIT — which can be narrower than 926px — from being caught by this
-   too, since portrait is excluded regardless of width.
-   !important on every rule here matches Bootstrap's own use of it for
-   these exact properties — without it, source order alone wouldn't
-   reliably win against Bootstrap's :min-width:768px; .navbar-collapse
-   rule once both media queries are simultaneously in effect. */
 @media (orientation:landscape) and (max-width:926px){
   .navbar-expand-md .navbar-collapse{display:none !important;}
   .navbar-expand-md .navbar-collapse.show{display:flex !important;}
@@ -117,12 +97,6 @@ body{
 .records-page-title{font-size:32px;font-weight:700;margin:0 0 4px;}
 .records-page-sub{color:var(--bs-secondary-color);font-size:15px;margin-bottom:18px;}
 
-/* ===================== NOAA report shell =====================
-   Deliberately keeps its own distinct look (navy/parchment, Courier
-   monospace, colored column groups) rather than being re-skinned into
-   the site's amber/navy theme — the whole point of "NOAA-style" is
-   that it reads like an actual climate summary, light/dark aware via
-   its own --noaa-* variables rather than the site's --bw-* ones. */
 [data-bs-theme="light"]{
   --noaa-navy:#1a3a5c; --noaa-mid:#2e6da4; --noaa-bg:#f4f7fb;
   --noaa-text-accent:#1a3a5c;
@@ -191,9 +165,6 @@ footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mon
 </head>
 <body>
 
-<!-- NAVBAR — split out into navbar.html, shared with records.html and
-     charts.html (not index.html, which has different nav content —
-     see navbar.html's own header comment). -->
 <div w3-include-html="navbar.html"></div>
 
 <div class="container-xl">
@@ -286,23 +257,12 @@ footer{font-size:12px;color:var(--bs-secondary-color);font-family:'JetBrains Mon
 </div>
 
 <script>
-/* ===================== Unit conversion (mirrors the other pages) ===================== */
 const C2F = c => c*9/5+32;
 const ms2mph = ms => ms*2.23694;
 const ms2kmh = ms => ms*3.6;
 const ms2kt  = ms => ms*1.94384;
 const mm2in = mm => mm*0.0393701;
 
-/* Beaufort scale — added so this page can share one navbar.html (and
-   its #unitSystem options) with records.html/charts.html, both of which
-   already support 'beaufort'. Unlike those pages' single stat tiles
-   (room for "F3 · Gentle breeze"), this page's WIND SPEED column is a
-   dense table cell, so Beaufort here is just the force number (0-12)
-   via the existing fmtW/fmtN number pipeline, with "Bft" as the column
-   unit label — simplified, but consistent with how every other unit
-   choice already renders on this page (a number + a short unit label),
-   rather than force-fitting records.html's descriptive-label format
-   into a table cell it wasn't designed for. */
 function beaufort(ms){
   const scale=[
     [0.5,0,"Calm"],[1.5,1,"Light air"],[3.3,2,"Light breeze"],[5.5,3,"Gentle breeze"],
@@ -343,18 +303,10 @@ function compass(deg){
   return dirs[Math.round(deg/22.5)%16];
 }
 
-/* ===================== Load charts.json + build date-keyed series =====================
-   Same real fields as records.html / charts.html, plus windDirAvg (also
-   confirmed real in charts_json.tmpl: $alltime.windDir.series(avg, daily)). */
 const CHARTS_JSON_URL = './charts/json/charts.json';
 let sTmax={}, sTmin={}, sTavg={}, sRain={}, sWsav={}, sWsmx={}, sWdir={};
 let firstYear = new Date().getFullYear(), lastYear = new Date().getFullYear();
 
-/* Date key from a charts.json daily timestamp (ms epoch, start-of-day in
-   station-local time) using LOCAL date components — matches the original
-   PHP's date('Y-m-d', $ts) under the station's own server timezone, and
-   matches how every other date label on this site is built (local, not
-   UTC) — see records.html / charts.html. */
 function dateKey(ts){
   const d = new Date(ts);
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -400,13 +352,12 @@ async function loadClimateData(){
   }
 }
 
-/* ===================== Selected year / month state ===================== */
 function getInitialState(){
   const url = new URL(window.location.href);
   const y = parseInt(url.searchParams.get('year'), 10);
   const m = parseInt(url.searchParams.get('month'), 10);
   return {
-    year: Number.isFinite(y) ? y : null,   // clamped once data has loaded
+    year: Number.isFinite(y) ? y : null,
     month: Number.isFinite(m) && m>=1 && m<=12 ? m : (new Date().getMonth()+1),
   };
 }
@@ -417,7 +368,6 @@ const MONTH_SHORT = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT'
 
 function daysInMonth(year, month){ return new Date(year, month, 0).getDate(); }
 
-/* ===================== Daily records for the selected month (Monthly tab) ===================== */
 function buildDailyRecords(year, month){
   const n = daysInMonth(year, month);
   const recs = [];
@@ -426,7 +376,7 @@ function buildDailyRecords(year, month){
     const mean = sTavg[dk] ?? null;
     const high = sTmax[dk] ?? null;
     const low  = sTmin[dk] ?? null;
-    const rain = (sRain[dk] != null && sRain[dk] <= 200) ? sRain[dk] : null; // same >200mm/day sanity guard as the original PHP
+    const rain = (sRain[dk] != null && sRain[dk] <= 200) ? sRain[dk] : null;
     const wsav = sWsav[dk] ?? null;
     const wsmx = sWsmx[dk] ?? null;
     const wdir = sWdir[dk] ?? null;
@@ -437,11 +387,6 @@ function buildDailyRecords(year, month){
   return recs;
 }
 
-/* ===================== Monthly summary records for all 12 months of selected year (Yearly tab) =====================
-   NOTE: hdd/cdd here use the MONTH's mean temperature × day count, not a
-   sum of each day's own HDD/CDD — a coarser approximation, but it's
-   exactly what the original PHP does, so kept as-is rather than "fixed"
-   into a different number than the report this is ported from. */
 function buildMonthlyRecords(year){
   const recs = [];
   for(let mo=1; mo<=12; mo++){
@@ -474,7 +419,6 @@ function buildMonthlyRecords(year){
   return recs;
 }
 
-/* ===================== Rendering ===================== */
 function populateSelectors(){
   const moSel = document.getElementById('moSel');
   const yrSel = document.getElementById('yrSel');
@@ -618,7 +562,6 @@ function switchTab(tabId){
   document.querySelectorAll('.noaa-tab-panel').forEach(p=>p.classList.toggle('active', p.id===tabId));
 }
 
-/* ===================== Wiring ===================== */
 document.querySelectorAll('.noaa-tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>switchTab(btn.dataset.tab));
 });
@@ -633,14 +576,7 @@ document.getElementById('yrSel').addEventListener('change', e=>{
   updateUrl();
   renderAll();
 });
-/* ===================== Hide the current page's own nav link =====================
-   Once navbar.html has loaded, hide whichever top-level nav button
-   points at the page we're already on (e.g. no "Climate" button while
-   actually on climate.html) — there's nothing useful for it to do once
-   you're already there. Scoped to a.nav-btn specifically so dropdown
-   items (Charts/Records' sub-views, which all share one href base but
-   differ by ?type=) are never matched/hidden by this — only plain
-   single-destination buttons are. */
+
 function hideCurrentNavLink(){
   const here = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
   document.querySelectorAll('#navCollapse a.nav-btn[href]').forEach(a => {
@@ -649,10 +585,6 @@ function hideCurrentNavLink(){
   });
 }
 
-/* ===================== HTML includes (w3-include-html) =====================
-   Same pattern/implementation as index.html's includeHTML() — see that
-   file's comment for the full rationale. navbar.html is the only
-   include on this page. */
 function includeHTML(callback){
   const elements = document.querySelectorAll('[w3-include-html]');
   let pending = elements.length;
@@ -680,19 +612,30 @@ function includeHTML(callback){
 }
 
 /* ===================== Theme: Auto / Light / Dark =====================
-   Simplified, as in records.html/charts.html — no live.json feed here.
-
-   #themeMenu/#themeIconSun/#themeIconMoon now live inside navbar.html
-   (a w3-include-html include), so applyTheme() only sets data-bs-theme
-   — no nav dependency — and runs immediately below (no flash-of-wrong-
-   theme regression from the navbar split). syncThemeNavUI() is the part
-   that actually touches nav elements; it defensively no-ops until
-   navbar.html has landed, then gets called once more from
-   includeHTML()'s callback to backfill the icon/active-state. */
+   "Auto" now follows the station's own real day/night flag
+   (loop.json's observations.isDay) — same as index.html's
+   resolveAutoIsDay() — rather than the OS/browser's
+   prefers-color-scheme. Previously this page used matchMedia for every
+   branch of 'auto', which is exactly why it could show light while
+   index.html showed dark at the same real moment: matchMedia reflects
+   the browser's own color-scheme setting, with no relation to whether
+   it's actually day or night at the station. This page has no other
+   reason to fetch loop.json (everything else here comes from
+   charts.json), so a small, low-frequency poll exists purely to keep
+   the Auto theme in sync with the rest of the site; matchMedia is now
+   only the fallback used before that first poll has landed. */
 const root = document.documentElement;
 let themeMode = localStorage.getItem('bircheswx-theme-mode') || 'auto';
+let lastIsDay = null;
+const LOOP_JSON_URL_FOR_THEME = './jsondata/loop.json';
+const THEME_ISDAY_POLL_MS = 5 * 60 * 1000;
+
+function resolveAutoIsDay(){
+  if(lastIsDay != null) return !!lastIsDay;
+  return !window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
 function resolveTheme(){
-  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  return themeMode==='light' ? 'light' : themeMode==='dark' ? 'dark' : (resolveAutoIsDay() ? 'light' : 'dark');
 }
 function applyTheme(){
   root.setAttribute('data-bs-theme', resolveTheme());
@@ -700,7 +643,7 @@ function applyTheme(){
 }
 function syncThemeNavUI(){
   const sunIcon = document.getElementById('themeIconSun');
-  if(!sunIcon) return; // navbar.html hasn't loaded yet — see includeHTML() callback below
+  if(!sunIcon) return;
   const resolved = resolveTheme();
   sunIcon.style.display = resolved==='light' ? '' : 'none';
   document.getElementById('themeIconMoon').style.display = resolved==='dark' ? '' : 'none';
@@ -708,26 +651,38 @@ function syncThemeNavUI(){
     el.classList.toggle('active-theme', el.dataset.themeChoice===themeMode);
   });
 }
+function pollIsDayForTheme(){
+  fetch(LOOP_JSON_URL_FOR_THEME, {cache:'no-store'})
+    .then(res => { if(!res.ok) throw new Error('HTTP '+res.status); return res.json(); })
+    .then(j => {
+      const o = (j && j.observations) || {};
+      if(o.isDay != null){
+        lastIsDay = o.isDay;
+        if(themeMode==='auto') applyTheme();
+      }
+    })
+    .catch(e => console.warn('Re-ImaginedWX climate: loop.json poll (theme) failed —', e.message));
+}
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
   if(themeMode==='auto') applyTheme();
 });
+window.addEventListener('storage', (e)=>{
+  if(e.key === 'bircheswx-theme-mode'){
+    themeMode = e.newValue || 'auto';
+    applyTheme();
+  }
+});
 applyTheme();
+pollIsDayForTheme();
+setInterval(pollIsDayForTheme, THEME_ISDAY_POLL_MS);
 
-/* ===================== Bootstrap ===================== */
 (async function init(){
   await loadClimateData();
   populateSelectors();
   renderAll();
 })();
 
-// navbar.html has to be in the DOM before #unitSystem/#themeMenu exist
-// to attach listeners to, or sync their state — see includeHTML() above.
 includeHTML(() => {
-  // Defensive: navbar.html failing to load is the one realistic way
-  // #unitSystem wouldn't exist here — includeHTML()'s callback still
-  // fires on a failed include (so one missing file can't hang every
-  // other poll on the page), so this has to handle that case itself
-  // rather than assume the include always succeeded.
   hideCurrentNavLink();
   if(!document.getElementById('unitSystem')) return;
   document.getElementById('unitSystem').addEventListener('change', e=>{
